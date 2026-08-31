@@ -23,6 +23,9 @@ build/
 coverage/
 .nyc_output/
 
+# Local benchmark measurements (may identify API hostnames).
+reports/performance/
+
 # Prisma (jika menggunakan SQLite lokal, agar tidak ter-commit)
 prisma/*.db
 prisma/*.db-journal

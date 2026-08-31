@@ -111,6 +111,9 @@ Without Xendit configuration, checkout returns HTTP `503` with `PAYMENT_PROVIDER
 
 ## Verification
 
+For the 200 ms performance benchmark, first-request handling, continuous testing,
+and the initial measurements, see [Performance benchmark](docs/performance.md).
+
 ```powershell
 npx prisma validate
 npx prisma generate

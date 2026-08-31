@@ -24,6 +24,7 @@ import {
   validateProductionConfig,
 } from './config/productionConfig';
 import { prisma } from './infrastructure/database/prismaClient';
+import { requestTiming } from './infrastructure/observability/requestTiming';
 
 if (process.env.NODE_ENV === 'production') {
   const report = validateProductionConfig();
@@ -34,6 +35,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(requestTiming);
 
 // Render terminates HTTPS and forwards requests through one trusted proxy.
 app.set('trust proxy', 1);

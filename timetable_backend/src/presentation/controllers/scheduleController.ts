@@ -7,6 +7,7 @@ import {
   stationDisplayName,
 } from '../../domain/services/stationIdentity';
 import { resolvePlatformRule } from '../../domain/services/platformRuleService';
+import { beginTiming, measurePhase } from '../../infrastructure/observability/requestTiming';
 
 const querySchema = z.object({
   stationId: z.string().uuid().optional(),
@@ -39,6 +40,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
       );
     }
     const { stationId, station, trainType, isWeekend, departureFrom, departureTo, page, limit } = parsed.data;
+    const finishCatalog = beginTiming('schedule_catalog');
     const timetableStation = await prisma.station.findFirst({
       where: stationId
         ? { id: stationId }
@@ -57,6 +59,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
       timetableStation?.isKrl && trainType !== 'LRT' && trainType !== 'MRT'
         ? await prisma.timetableDataset.findFirst({ where: { isActive: true } })
         : null;
+    finishCatalog();
 
     if (timetableStation && activeDataset) {
       const stopWhere = {
@@ -72,7 +75,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
           calendar: { code: { in: isWeekend === 'true' ? ['DAILY'] : ['DAILY', 'WEEKDAY'] } },
         },
       } as const;
-      const [departures, total] = await prisma.$transaction([
+      const [departures, total] = await measurePhase('schedule_query', () => prisma.$transaction([
         prisma.trainStopTime.findMany({
           where: stopWhere,
           include: {
@@ -95,10 +98,10 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
           take: limit,
         }),
         prisma.trainStopTime.count({ where: stopWhere }),
-      ]);
+      ]));
       res.json({
         success: true,
-        data: await Promise.all(departures.map(async ({ service, departureMinute }) => {
+        data: await measurePhase('schedule_format', () => Promise.all(departures.map(async ({ service, departureMinute }) => {
           const first = service.stops[0];
           const last = service.stops.at(-1);
           const display = (value: typeof first | undefined) => value?.station.officialName ?? value?.station.name ?? '';
@@ -130,7 +133,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
               operationalCode: timetableStation.operationalCode,
             },
           };
-        })),
+        }))),
         meta: { page, limit, total, datasetVersion: activeDataset.version },
       });
       return;
@@ -162,7 +165,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
           }
         : {}),
     };
-    const [schedules, total] = await prisma.$transaction([
+    const [schedules, total] = await measurePhase('schedule_query', () => prisma.$transaction([
       prisma.schedule.findMany({
         where,
         include: {
@@ -173,7 +176,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
         take: limit,
       }),
       prisma.schedule.count({ where }),
-    ]);
+    ]));
     res.json({
       success: true,
       data: schedules.map(({ station: scheduleStation, ...schedule }) => ({

@@ -2,6 +2,7 @@ import { prisma } from '../../infrastructure/database/prismaClient';
 import { ApiError } from '../errors/ApiError';
 import { FareService } from './fareService';
 import { publicCodeForLine, stationDisplayName } from './stationIdentity';
+import { beginTiming, measurePhase } from '../../infrastructure/observability/requestTiming';
 
 type RouteStepKind = 'board' | 'transfer' | 'continue' | 'arrive';
 
@@ -124,10 +125,10 @@ export class RouteService {
     passengerCount = 1,
     preference: RoutePreference = 'FASTEST',
   ): Promise<RoutePlanResult> {
-    const [fromStation, toStation] = await Promise.all([
+    const [fromStation, toStation] = await measurePhase('station_lookup', () => Promise.all([
       this.resolveStation(fromIdentifier),
       this.resolveStation(toIdentifier),
-    ]);
+    ]));
     if (fromStation.id === toStation.id) {
       throw new ApiError(
         400,
@@ -136,7 +137,7 @@ export class RouteService {
       );
     }
 
-    const connections = await prisma.routeConnection.findMany({
+    const connections = await measurePhase('graph_load', () => prisma.routeConnection.findMany({
       include: {
         fromNode: {
           include: { station: { include: { publicCodes: true } }, line: true },
@@ -145,7 +146,8 @@ export class RouteService {
           include: { station: { include: { publicCodes: true } }, line: true },
         },
       },
-    });
+    }));
+    const finishDijkstra = beginTiming('dijkstra');
     const adjacency = new Map<string, typeof connections>();
     for (const connection of connections) {
       const outgoing = adjacency.get(connection.fromNodeId) ?? [];
@@ -190,6 +192,7 @@ export class RouteService {
     }
 
     if (!reachedId) {
+      finishDijkstra();
       throw new ApiError(
         422,
         `No connected route from ${stationDisplayName(fromStation)} to ${stationDisplayName(toStation)}`,
@@ -204,6 +207,7 @@ export class RouteService {
       path.unshift(connection);
       cursor = connection.fromNodeId;
     }
+    finishDijkstra();
     const originNode = path[0]?.fromNode;
     if (!originNode) {
       throw new ApiError(422, 'Route has no traversable connection', 'ROUTE_NOT_FOUND');
