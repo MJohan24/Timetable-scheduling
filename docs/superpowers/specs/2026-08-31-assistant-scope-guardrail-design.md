@@ -44,6 +44,12 @@ When a user is making small talk or only states a current location, the assistan
 
 The backend treats `di <stasiun>`, `lagi di <stasiun>`, and `berangkat dari <stasiun>` as possible origins in previous user turns. It also recognizes a complete route in natural word order, including `mau ke <tujuan> dari <asal>` and trailing conversational filler such as `kira-kira naiknya apa ya`. A backend route is calculated only once both station identities are clear. Generic greetings remain conversational and short; the assistant must not use a repetitive greeting, invent travel facts, or show a route before it is requested.
 
+## Intent and travel context
+
+The backend, not Gemini, extracts a small temporary travel context from the current message and the six most recent turns. It associates likely station-name phrases with common Indonesian origin and destination cues: `dari`, `di`, `lagi di`, and `berangkat dari` for origin; `ke`, `menuju`, `tujuan`, and `mau ke` for destination. It accepts either word order, including `mau ke <tujuan> dari <asal>`, and removes only trailing conversational filler such as `kira-kira naiknya apa ya`. The existing route service validates the extracted station identities.
+
+When both identities are known, the backend calculates the route and sends the factual result to Gemini. When only one identity is known, Gemini receives that compact context and asks only for the missing part. When neither is clear, Gemini responds to the conversation naturally without inventing travel data. This design uses one Gemini request per user message; local context extraction and backend route calculation do not consume Gemini quota.
+
 ## Error handling
 
 Provider, quota, timeout, and empty-response handling remains unchanged. The fixed out-of-scope reply is a successful AI reply, not an API error.
