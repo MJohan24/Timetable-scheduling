@@ -248,3 +248,66 @@ Expected: Flutter tests and analyzer pass; backend tests and build pass; live re
 git add lib/features/assistant test/assistant_conversation_controller_test.dart timetable_backend/src/domain/services/assistantService.ts timetable_backend/src/presentation/controllers/assistantController.ts timetable_backend/tests/assistantService.test.ts
 git commit -m "feat: preserve assistant context within active chat"
 ```
+
+### Task 4: Make location-only chat replies natural
+
+**Files:**
+- Modify: `timetable_backend/src/domain/services/assistantService.ts`
+- Modify: `timetable_backend/tests/assistantService.test.ts`
+
+- [ ] **Step 1: Write failing prompt and origin-extraction tests**
+
+```ts
+assert.deepEqual(
+  extractRouteRequest('Mau ke Jakarta Kota', [
+    { role: 'user', text: 'Aku lagi di Bintaro nih' },
+  ]),
+  { from: 'Bintaro', to: 'Jakarta Kota' },
+);
+
+const prompt = buildAssistantPrompt('Aku lagi di Bintaro nih');
+assert.match(prompt, /hanya menyebut lokasi/);
+assert.match(prompt, /Jangan membuat rute/);
+```
+
+- [ ] **Step 2: Run focused test and verify failure**
+
+Run:
+
+```bash
+cd timetable_backend
+node --import tsx --test tests/assistantService.test.ts
+```
+
+Expected: FAIL because `lagi di` is not an origin and the prompt has no location-only reply rule.
+
+- [ ] **Step 3: Add minimal natural-conversation rules**
+
+```ts
+Jika pengguna hanya menyebut lokasi, akui lokasi itu secara natural dan tanyakan hanya tujuan.
+Jangan membuat rute, menyebut jalur atau arah, maupun memberi daftar stasiun sebelum tujuan jelas.
+Jangan selalu membuka jawaban dengan "Halo".
+```
+
+Expand prior-origin extraction with `di <stasiun>`, `lagi di <stasiun>`, and `berangkat dari <stasiun>`. Keep `RouteService.planRoute` behind a clear destination only.
+
+- [ ] **Step 4: Run full and live checks**
+
+Run:
+
+```bash
+cd timetable_backend
+npm test
+npm run build
+curl -sS -X POST http://localhost:3000/api/v1/assistant/chat -H 'Content-Type: application/json' --data '{"message":"Aku lagi di Bintaro nih"}'
+curl -sS -X POST http://localhost:3000/api/v1/assistant/chat -H 'Content-Type: application/json' --data '{"message":"Mau ke Jakarta Kota","history":[{"role":"user","text":"Aku lagi di Bintaro nih"}]}'
+```
+
+Expected: first reply acknowledges Bintaro and asks only a destination; second reply uses backend route facts from Bintaro to Jakarta Kota.
+
+- [ ] **Step 5: Commit implementation**
+
+```bash
+git add timetable_backend/src/domain/services/assistantService.ts timetable_backend/tests/assistantService.test.ts
+git commit -m "feat: make assistant location chat more natural"
+```
