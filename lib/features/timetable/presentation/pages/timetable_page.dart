@@ -613,8 +613,8 @@ class _TimetablePageState extends State<TimetablePage> {
                               color: AppColors.textHint.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              'Server sedang aktif',
+                            Text(
+                              l10n.scheduleServerActive,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15,
@@ -623,8 +623,8 @@ class _TimetablePageState extends State<TimetablePage> {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            const Text(
-                              'Koneksi ke backend masih disiapkan atau terputus. Coba lagi tanpa menganggap jadwal kosong.',
+                            Text(
+                              l10n.scheduleBackendError,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12,
@@ -635,7 +635,7 @@ class _TimetablePageState extends State<TimetablePage> {
                             TextButton.icon(
                               onPressed: _loadSchedules,
                               icon: const Icon(Icons.refresh_rounded, size: 18),
-                              label: const Text('Coba Lagi'),
+                              label: Text(l10n.actionRetry),
                             ),
                           ],
                         ),
@@ -696,6 +696,7 @@ class _TimetablePageState extends State<TimetablePage> {
                     final status = ScheduleStatusCalculator.calculate(
                       schedule: schedule,
                       now: _now,
+                      l10n: l10n,
                     );
                     return !status.hasDeparted &&
                         status.kind != ScheduleStatusKind.unavailable;
@@ -707,7 +708,7 @@ class _TimetablePageState extends State<TimetablePage> {
                     itemCount: filteredSchedules.length + 1,
                     itemBuilder: (context, index) {
                       if (index == 0) {
-                        return const Padding(
+                        return Padding(
                           padding: EdgeInsets.only(bottom: 12),
                           child: Row(
                             children: [
@@ -719,8 +720,8 @@ class _TimetablePageState extends State<TimetablePage> {
                               SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  'Jadwal Commuter Line Februari 2026 · status otomatis berdasarkan jadwal (bukan real-time KAI)',
-                                  style: TextStyle(
+                                  l10n.scheduleDatasetNote,
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w500,

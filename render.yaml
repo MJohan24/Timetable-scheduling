@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: timetable-scheduling-api-mjohan
+    runtime: node
+    plan: free
+    region: singapore
+    branch: MJohan-Dev3
+    rootDir: timetable_backend
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm start
+    initialDeployHook: npx prisma db seed && npm run timetable:import -- prisma/data/commuter-2026-02.json
+    healthCheckPath: /ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TICKET_QR_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: XENDIT_SECRET_KEY
+        sync: false
+      - key: XENDIT_WEBHOOK_TOKEN
+        sync: false
+      - key: XENDIT_API_URL
+        value: https://api.xendit.co

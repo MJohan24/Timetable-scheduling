@@ -1,4 +1,9 @@
 import '../entities/route_plan.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/app_localizations_ar.dart';
+import '../../../../l10n/app_localizations_en.dart';
+import '../../../../l10n/app_localizations_id.dart';
+import '../../../../l10n/app_localizations_zh.dart';
 
 abstract interface class RouteSpeechService {
   Future<void> speak(String text, String languageCode);
@@ -12,13 +17,17 @@ String _rupiah(int value) => value.toString().replaceAllMapped(
 );
 
 String buildRouteNarration(RoutePlan route, String languageCode) {
-  final summary = languageCode == 'en'
-      ? 'Route from ${route.from} to ${route.to}. '
-            'Estimated travel time is ${route.travelTime} minutes. '
-            'Fare is ${route.currency} ${_rupiah(route.fare)}.'
-      : 'Rute dari ${route.from} menuju ${route.to}. '
-            'Estimasi waktu ${route.travelTime} menit. '
-            'Tarif Rp${_rupiah(route.fare)}.';
+  final l10n = _copyFor(languageCode);
+  final currency = languageCode == 'id' && route.currency == 'IDR'
+      ? 'Rp'
+      : route.currency;
+  final summary = l10n.routeNarrationSummary(
+    route.from,
+    route.to,
+    route.travelTime,
+    currency,
+    _rupiah(route.fare),
+  );
   final steps = route.steps
       .map(
         (step) =>
@@ -27,3 +36,10 @@ String buildRouteNarration(RoutePlan route, String languageCode) {
       .join(' ');
   return '$summary $steps'.trim();
 }
+
+AppLocalizations _copyFor(String languageCode) => switch (languageCode) {
+  'en' => AppLocalizationsEn(),
+  'zh' => AppLocalizationsZh(),
+  'ar' => AppLocalizationsAr(),
+  _ => AppLocalizationsId(),
+};

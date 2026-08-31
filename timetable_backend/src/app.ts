@@ -19,9 +19,24 @@ import assistantRoutes from './presentation/routes/assistantRoutes';
 import utilityRoutes from './presentation/routes/utilityRoutes';
 import profileRoutes from './presentation/routes/profileRoutes';
 import trackingRoutes from './presentation/routes/trackingRoutes';
+import {
+  getFeatureReadiness,
+  validateProductionConfig,
+} from './config/productionConfig';
+import { prisma } from './infrastructure/database/prismaClient';
+
+if (process.env.NODE_ENV === 'production') {
+  const report = validateProductionConfig();
+  for (const warning of report.warnings) {
+    console.warn(`[production-config] ${warning}`);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Render terminates HTTPS and forwards requests through one trusted proxy.
+app.set('trust proxy', 1);
 
 // Security and Utility Middlewares
 app.use(helmet());
@@ -67,6 +82,28 @@ app.use('/api/v1/tracking', trackingRoutes);
 app.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
 });
+app.get('/ready', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      success: true,
+      data: {
+        status: 'ready',
+        database: 'connected',
+        features: getFeatureReadiness(),
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch {
+    res.status(503).json({
+      success: false,
+      error: {
+        code: 'DATABASE_UNAVAILABLE',
+        message: 'Database is unavailable.',
+      },
+    });
+  }
+});
 
 // Global Error Handler
 app.use(errorHandler);
@@ -81,13 +118,13 @@ export const io = new Server(server, {
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
-  
+
   // Client subscribes to a specific train
   socket.on('subscribe-train', (trainNumber) => {
     socket.join(`train-${trainNumber}`);
     console.log(`Socket ${socket.id} joined room train-${trainNumber}`);
   });
-  
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
   });

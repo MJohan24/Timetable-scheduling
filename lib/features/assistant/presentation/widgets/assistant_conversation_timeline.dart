@@ -61,7 +61,9 @@ class AssistantConversationTimeline extends StatelessWidget {
     return Semantics(
       container: true,
       liveRegion: isLatest && isAssistant,
-      label: '$sender, ${item.text}',
+      label: AppLocalizations.of(
+        context,
+      )!.assistantMessageSemantics(sender, item.text),
       explicitChildNodes: true,
       child: Column(
         crossAxisAlignment: isAssistant

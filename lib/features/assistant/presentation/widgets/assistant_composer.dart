@@ -88,8 +88,8 @@ class _AssistantComposerState extends State<AssistantComposer> {
               ),
               const SizedBox(width: 8),
               _ComposerIconButton(
-                semanticsLabel: widget.microphoneSemanticsLabel.isEmpty 
-                    ? l10n.voiceStartConversation 
+                semanticsLabel: widget.microphoneSemanticsLabel.isEmpty
+                    ? l10n.voiceStartConversation
                     : widget.microphoneSemanticsLabel,
                 icon: Icons.mic_rounded,
                 onPressed: widget.onMicrophoneTap,

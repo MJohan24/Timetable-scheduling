@@ -331,7 +331,7 @@ class _LocationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Temukan lokasi saya',
+      label: AppLocalizations.of(context)!.mapLocateMe,
       child: GestureDetector(
         key: const Key('locate-user-button'),
         onTap: isLoading ? null : onTap,

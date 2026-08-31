@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/travel_alarm_state.dart';
+import '../models/travel_alarm_copy.dart';
 
 class TravelAlarmController extends ChangeNotifier {
   TravelAlarmController({
     this.departureUrgentDelay = const Duration(seconds: 8),
     this.destinationWarningDelay = const Duration(seconds: 14),
-  });
+    TravelAlarmCopy? copy,
+  }) : _copy = copy ?? TravelAlarmCopy.indonesian();
 
   final Duration departureUrgentDelay;
   final Duration destinationWarningDelay;
@@ -18,23 +20,33 @@ class TravelAlarmController extends ChangeNotifier {
   Timer? _departureTimer;
   Timer? _destinationTimer;
   int _nextReminderId = 0;
+  TravelAlarmCopy _copy;
+
+  void configure(TravelAlarmCopy copy) => _copy = copy;
+
+  TravelAlarmCopy get copy => _copy;
 
   String get nextAlarmDescription {
     if (state.departureAlarmEnabled) {
-      return 'Kereta datang ${state.minutesUntilTrain} menit lagi';
+      return copy.trainArrivesIn(state.minutesUntilTrain);
     }
     if (state.destinationAlarmEnabled && state.activeTrip != null) {
       return destinationDescription;
     }
-    return 'Tidak ada alarm aktif';
+    return copy.noActiveAlarm;
   }
 
   String get destinationDescription {
     final trip = state.activeTrip;
-    final action = trip?.transferStation == null
-        ? 'Turun di ${trip?.to ?? 'tujuan'}'
-        : 'Transit di ${trip!.transferStation}';
-    return '$action, ${state.stationsUntilDestination} stasiun lagi';
+    return trip?.transferStation == null
+        ? copy.exitAt(
+            trip?.to ?? copy.destinationFallback,
+            state.stationsUntilDestination,
+          )
+        : copy.transferAt(
+            trip!.transferStation!,
+            state.stationsUntilDestination,
+          );
   }
 
   void completePurchase({
@@ -116,7 +128,7 @@ class TravelAlarmController extends ChangeNotifier {
     _departureTimer = null;
     if (!state.departureAlarmEnabled) return;
     _replaceState(state.copyWith(minutesUntilTrain: 1));
-    _emitReminder('Kereta datang 1 menit lagi');
+    _emitReminder(copy.trainArrivesIn(1));
   }
 
   void advanceDestinationDemo() {

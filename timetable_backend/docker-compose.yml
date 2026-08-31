@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16-alpine
@@ -29,10 +27,14 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-}
       - XENDIT_SECRET_KEY=${XENDIT_SECRET_KEY:-}
       - XENDIT_WEBHOOK_TOKEN=${XENDIT_WEBHOOK_TOKEN:-}
+      - XENDIT_API_URL=${XENDIT_API_URL:-https://api.xendit.co}
       - XENDIT_SUCCESS_RETURN_URL=${XENDIT_SUCCESS_RETURN_URL:-}
       - XENDIT_CANCEL_RETURN_URL=${XENDIT_CANCEL_RETURN_URL:-}
       - KAI_REALTIME_API_URL=${KAI_REALTIME_API_URL:-}
       - KAI_REALTIME_API_TOKEN=${KAI_REALTIME_API_TOKEN:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      - GEMINI_VISION_MODEL=${GEMINI_VISION_MODEL:-gemini-3.5-flash-lite}
     ports:
       - "3000:3000"
     depends_on:

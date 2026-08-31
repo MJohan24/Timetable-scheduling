@@ -41,36 +41,44 @@ class ProfilePage extends StatelessWidget {
                         _AccountHero(user: user, offline: offline),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                          child: _ProfileMenuSection(
-                            entries: [
-                              _MenuEntry(
-                                icon: Icons.receipt_long_outlined,
-                                title: ticketTitle,
-                                subtitle: ticketSubtitle,
-                                onTap: () => context.push('/riwayat-tiket'),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _ProfileMenuSection(
+                                entries: [
+                                  _MenuEntry(
+                                    icon: Icons.receipt_long_outlined,
+                                    title: ticketTitle,
+                                    subtitle: ticketSubtitle,
+                                    onTap: () => context.push('/riwayat-tiket'),
+                                  ),
+                                  _MenuEntry(
+                                    icon: Icons.language_rounded,
+                                    title: l10n.languagePageTitle,
+                                    subtitle: currentLocale.localizedName(l10n),
+                                    onTap: () => context.push('/bahasa'),
+                                  ),
+                                  _MenuEntry(
+                                    icon: Icons.support_agent_rounded,
+                                    title: l10n.profileHelpCenter,
+                                    subtitle: l10n.profileContactOfficer,
+                                    onTap: () => context.push('/pusat-bantuan'),
+                                  ),
+                                ],
                               ),
-                              _MenuEntry(
-                                icon: Icons.language_rounded,
-                                title: l10n.languagePageTitle,
-                                subtitle: currentLocale.localizedName(l10n),
-                                onTap: () => context.push('/bahasa'),
-                              ),
-                              _MenuEntry(
-                                icon: Icons.accessibility_new_rounded,
-                                title: l10n.profileAccessibility,
-                                subtitle: l10n.profileLargeText,
-                                onTap: () => context.push('/aksesibilitas'),
-                              ),
-                              _MenuEntry(
-                                icon: Icons.support_agent_rounded,
-                                title: l10n.profileHelpCenter,
-                                subtitle: l10n.profileContactOfficer,
-                                onTap: () => context.push('/pusat-bantuan'),
-                              ),
+                              const SizedBox(height: 14),
+                              const _BlindGuideCard(),
+                              if (user != null) ...[
+                                const SizedBox(height: 14),
+                                _ProfileMenuSection(
+                                  sectionKey: const ValueKey(
+                                    'account-logout-section',
+                                  ),
+                                  entries: const [],
+                                  onLogout: () => _confirmLogout(context, auth),
+                                ),
+                              ],
                             ],
-                            onLogout: user == null
-                                ? null
-                                : () => _confirmLogout(context, auth),
                           ),
                         ),
                       ],
@@ -348,10 +356,15 @@ class _QuickAction extends StatelessWidget {
 }
 
 class _ProfileMenuSection extends StatelessWidget {
-  const _ProfileMenuSection({required this.entries, this.onLogout});
+  const _ProfileMenuSection({
+    required this.entries,
+    this.onLogout,
+    this.sectionKey = const ValueKey('account-menu-section'),
+  });
 
   final List<_MenuEntry> entries;
   final VoidCallback? onLogout;
+  final Key sectionKey;
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +398,7 @@ class _ProfileMenuSection extends StatelessWidget {
     }
 
     return Material(
-      key: const ValueKey('account-menu-section'),
+      key: sectionKey,
       color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -393,6 +406,100 @@ class _ProfileMenuSection extends StatelessWidget {
         side: const BorderSide(color: AppColors.cardBorder),
       ),
       child: Column(children: rows),
+    );
+  }
+}
+
+class _BlindGuideCard extends StatefulWidget {
+  const _BlindGuideCard();
+
+  @override
+  State<_BlindGuideCard> createState() => _BlindGuideCardState();
+}
+
+class _BlindGuideCardState extends State<_BlindGuideCard> {
+  bool _active = false;
+
+  Future<void> _activate() async {
+    if (_active) return;
+    setState(() => _active = true);
+    await context.push('/asisten/pemandu-kamera?autoVoice=true');
+    if (mounted) setState(() => _active = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Material(
+      key: const ValueKey('blind-guide-card'),
+      color: AppColors.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.cardBorder),
+      ),
+      child: Semantics(
+        button: true,
+        toggled: _active,
+        label:
+            '${l10n.profileBlindGuide}. ${l10n.profileBlindGuideDescription}',
+        child: InkWell(
+          onTap: _activate,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 82),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 12, 12, 12),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.blind_rounded,
+                    color: AppColors.textPrimary,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.profileBlindGuide,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          l10n.profileBlindGuideDescription,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ExcludeSemantics(
+                    child: Switch(
+                      key: const ValueKey('blind-guide-switch'),
+                      value: _active,
+                      onChanged: (value) {
+                        if (value) _activate();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

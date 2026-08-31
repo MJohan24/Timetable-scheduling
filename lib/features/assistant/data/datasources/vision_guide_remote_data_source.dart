@@ -24,11 +24,17 @@ class VisionGuideRemoteDataSource {
 
   void close() => _client.close();
 
-  Future<VisionGuideResult?> analyzeJpeg(Uint8List bytes) async {
+  Future<VisionGuideResult?> analyzeJpeg(
+    Uint8List bytes, {
+    required String languageTag,
+  }) async {
     final response = await _client
         .post(
           Uri.parse('${ApiConfig.baseUrl}/assistant/vision'),
-          headers: const {'Content-Type': 'image/jpeg'},
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Accept-Language': languageTag,
+          },
           body: bytes,
         )
         .timeout(ApiTimeouts.request);

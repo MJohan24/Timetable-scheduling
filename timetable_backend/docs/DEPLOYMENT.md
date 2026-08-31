@@ -37,17 +37,25 @@ docker run --env-file .env -p 3000:3000 kai-access-api
 Entrypoint runs:
 
 1. `npx prisma migrate deploy`
-2. `npx prisma db seed`
-3. `node dist/app.js`
+2. `node dist/app.js`
 
-### Render (or similar free Node host)
+Seed and timetable import are intentionally separate operations. They must not
+run on every container restart.
 
-1. Connect the `timetable_backend` root as the service directory.
-2. Build: `npm ci && npx prisma generate && npm run build`
-3. Start: `npx prisma migrate deploy && npm start`
-4. Attach the env vars above.
-5. Enable HTTPS on the public URL.
-6. From a trusted machine with dev dependencies, seed once:
+### Render Blueprint
+
+The repository root contains `render.yaml`. Create a Render Blueprint from the
+`MJohan-Dev3` branch. The Blueprint:
+
+- deploys only `timetable_backend` from this monorepo;
+- runs migrations before startup;
+- uses `/ready` as the database-aware health check;
+- runs seed and the February 2026 import once through `initialDeployHook`;
+- generates JWT and ticket QR secrets in Render;
+- prompts for Neon, Gemini, and Xendit values without storing them in Git.
+
+If the one-time hook must be repeated, run these commands from a trusted
+machine with the production `DATABASE_URL`:
 
 ```powershell
 $env:DATABASE_URL="postgresql://..."
@@ -65,6 +73,7 @@ dataset version. Both commands use the same Neon `DATABASE_URL`.
 
 ```text
 GET  https://<host>/health
+GET  https://<host>/ready
 GET  https://<host>/api/v1/stations?limit=5
 POST https://<host>/api/v1/routes/plan
 GET  https://<host>/api/v1/schedules?station=Manggarai&limit=5
@@ -74,9 +83,24 @@ POST https://<host>/api/v1/assistant/chat
 Expected:
 
 - `/health` returns `{ "success": true, "data": { "status": "ok" } }`
+- `/ready` checks Neon and reports only boolean feature readiness
 - disconnected routes return structured errors (no dummy path)
 - missing platform rules return empty `platform` (UI shows **Peron belum tersedia**)
 - without `GEMINI_API_KEY`, chat/vision return structured AI-not-configured errors
+
+Run all public smoke checks with:
+
+```powershell
+npm run smoke:production -- https://<host>/api/v1
+```
+
+For the full demo, require configured AI and Xendit:
+
+```powershell
+$env:REQUIRE_AI="true"
+$env:REQUIRE_PAYMENT="true"
+npm run smoke:production -- https://<host>/api/v1
+```
 
 ## 6. Cold start
 
@@ -85,6 +109,10 @@ request timeout and show **Server sedang aktif** + **Coba Lagi**. Do not treat
 timeout as an empty station/schedule list.
 
 ## 7. Release APK
+
+Release builds require a private upload keystore. Keep
+`android/key.properties` and `android/app/upload-keystore.jks` local; both are
+ignored by Git. `android/key.properties.example` documents the required keys.
 
 From the Flutter project root:
 

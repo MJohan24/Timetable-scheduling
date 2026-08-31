@@ -98,6 +98,94 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileLargeText => 'نص كبير وطرق القراءة';
 
   @override
+  String get profileBlindGuide => 'دليل المكفوفين';
+
+  @override
+  String get profileBlindGuideDescription =>
+      'افتح الكاميرا مع إرشادات صوتية تلقائية';
+
+  @override
+  String get cameraGuideActiveAnnouncement =>
+      'دليل الكاميرا نشط. وجّه الكاميرا إلى الأمام.';
+
+  @override
+  String get cameraGuideTitle => 'دليل الكاميرا';
+
+  @override
+  String get cameraGuideBack => 'رجوع';
+
+  @override
+  String cameraGuideStatus(String status) {
+    return 'حالة الكاميرا: $status';
+  }
+
+  @override
+  String get cameraGuideStateLoading => 'جارٍ التحميل';
+
+  @override
+  String get cameraGuideStateActive => 'نشط';
+
+  @override
+  String get cameraGuideStatePermissionDenied => 'الإذن مطلوب';
+
+  @override
+  String get cameraGuideStateOffline => 'غير متصل';
+
+  @override
+  String get cameraGuideStateError => 'خطأ';
+
+  @override
+  String get cameraGuideStateStopped => 'متوقف';
+
+  @override
+  String get cameraGuidePermissionRequired =>
+      'يلزم إذن الكاميرا. فعّله من الإعدادات إذا تم رفضه نهائيًا من قبل.';
+
+  @override
+  String get cameraGuideSafetyWarning =>
+      'قد يكون الاكتشاف غير دقيق. استخدم عصًا أو مرافقًا أو اطلب مساعدة الموظفين.';
+
+  @override
+  String get cameraGuideRetry => 'حاول مرة أخرى';
+
+  @override
+  String get cameraGuideStart => 'بدء الدليل';
+
+  @override
+  String get cameraGuideStop => 'إيقاف الدليل';
+
+  @override
+  String get cameraGuideLoadingMessage => 'جارٍ إعداد الكاميرا…';
+
+  @override
+  String get cameraGuideActiveMessage =>
+      'وجّه الكاميرا إلى الأمام. الدليل نشط.';
+
+  @override
+  String get cameraGuideUnavailableMessage => 'لا يمكن استخدام الكاميرا.';
+
+  @override
+  String get cameraGuideOfflineMessage =>
+      'الاكتشاف المحلي محدود؛ اتصال الذكاء الاصطناعي غير متاح.';
+
+  @override
+  String get cameraGuideStoppedMessage => 'تم إيقاف دليل الكاميرا.';
+
+  @override
+  String get cameraGuideNoClearObject =>
+      'لم يتم اكتشاف جسم واضح في الأمام بعد.';
+
+  @override
+  String cameraGuideObjectCount(int count) {
+    return 'تم اكتشاف $count أجسام في الأمام.';
+  }
+
+  @override
+  String cameraGuideLabelsDetected(String labels) {
+    return 'تم اكتشاف $labels في الأمام.';
+  }
+
+  @override
   String get profileHelpCenter => 'مركز المساعدة';
 
   @override
@@ -115,7 +203,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authRegisterSubtitle =>
-      'أنشئ حسابًا مع استمرار وصول الضيف إلى الجداول والمسارات وشراء التذاكر.';
+      'يمكنك التسجيل مع بقاء الوصول كضيف إلى الجداول والمسارات وشراء التذاكر.';
 
   @override
   String get authName => 'الاسم الكامل';
@@ -143,7 +231,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل.';
 
   @override
-  String get authPasswordMismatch => 'تأكيد كلمة المرور غير مطابق.';
+  String get authPasswordMismatch => 'تأكيد كلمة المرور غير متطابق.';
 
   @override
   String get authShowPassword => 'إظهار كلمة المرور';
@@ -155,17 +243,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authSubmitLogin => 'تسجيل الدخول';
 
   @override
-  String get authSubmitRegister => 'إنشاء حساب';
+  String get authSubmitRegister => 'التسجيل';
 
   @override
-  String get authCreateAccount => 'ليس لديك حساب؟ أنشئ حسابًا';
+  String get authCreateAccount => 'ليس لديك حساب؟ سجّل الآن';
 
   @override
   String get authBackToLogin => 'لديك حساب بالفعل؟ سجّل الدخول';
 
   @override
   String get authGuestStillAvailable =>
-      'بدون حساب، لا يزال بإمكانك عرض الجداول والبحث عن المسارات وشراء التذاكر كضيف.';
+      'من دون حساب، يمكنك عرض الجداول والبحث عن المسارات وشراء التذاكر كضيف.';
 
   @override
   String get authInvalidCredentials =>
@@ -185,7 +273,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileSignedIn => 'الحساب نشط';
 
   @override
-  String get profileOfflineSession => 'الحساب محفوظ · غير متصل حاليًا';
+  String get profileOfflineSession => 'تم حفظ الحساب · غير متصل حاليًا';
 
   @override
   String get profileOfflineHint => 'ستتوفر بعض التغييرات عند عودة الاتصال.';
@@ -880,6 +968,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chatSharedData => 'البيانات المشتركة';
 
   @override
+  String chatReceivedData(String data) {
+    return 'البيانات المستلمة:\n$data';
+  }
+
+  @override
   String get issueLateEtaTitle => 'أواخر ETA';
 
   @override
@@ -1029,6 +1122,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get topicTicketShared => 'وضع الضيف ومعرف التذكرة والمسار الأخير';
 
   @override
+  String get topicTicketSampleData =>
+      'رمز التذكرة: TKT-20260827-001\nالمسار: Manggarai – Tanah Abang\nتاريخ الرحلة: 27 أغسطس 2026\nالحالة: نشطة';
+
+  @override
   String get topicTicketAction => 'ابدأ محادثة التذاكر';
 
   @override
@@ -1057,6 +1154,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get topicScheduleShared => 'المسار الأخير ووجهة الأصل ووقت السفر';
 
   @override
+  String get topicScheduleSampleData =>
+      'محطة الانطلاق: Manggarai\nالوجهة: Jakarta Kota\nرقم القطار: KA 1184\nالمغادرة: 10:25 WIB\nالرصيف: 3';
+
+  @override
   String get topicScheduleAction => 'ابدأ جدولة الدردشة';
 
   @override
@@ -1083,6 +1184,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get topicPaymentShared => 'حالة المعاملة الأخيرة ورمز التذكرة والوقت';
+
+  @override
+  String get topicPaymentSampleData =>
+      'معرف المعاملة: TRX-20260827-001\nالطريقة: QRIS\nالمبلغ: Rp7.800\nالوقت: 27 أغسطس 2026، 10:20 WIB\nالحالة: ناجحة';
 
   @override
   String get topicPaymentAction => 'ابدأ محادثة الدفع';
@@ -1711,6 +1816,74 @@ class AppLocalizationsAr extends AppLocalizations {
   String get assistantRetry => 'أعد المحاولة';
 
   @override
+  String get assistantUnknownDestination => 'لم أفهم وجهتك.';
+
+  @override
+  String assistantDemoTranscript(String destination, String origin) {
+    return 'أريد الذهاب من $origin إلى $destination.';
+  }
+
+  @override
+  String get assistantDemoResponse =>
+      'يستغرق أسرع مسار 7 دقائق. يصل القطار خلال 5 دقائق.';
+
+  @override
+  String get assistantUnavailable =>
+      'المساعد غير متاح حاليًا. حاول مرة أخرى أو راجع معلومات المحطة الرسمية.';
+
+  @override
+  String get assistantUnknownCommand =>
+      'لم أفهم هذا الأمر. جرّب: «متى التنبيه التالي؟» أو «فعّل كل تنبيهات تذاكري».';
+
+  @override
+  String get assistantNoActiveTicket => 'لا توجد تذكرة نشطة';
+
+  @override
+  String get assistantNoActiveAlarm => 'لا يوجد تنبيه نشط.';
+
+  @override
+  String get assistantAllAlarmsCancelled => 'تم إلغاء جميع تنبيهات الرحلة.';
+
+  @override
+  String get assistantDestinationAlarmAlreadyOff =>
+      'تنبيه الوجهة متوقف بالفعل.';
+
+  @override
+  String get assistantDestinationAlarmDisabled => 'تم تعطيل تنبيه الوجهة.';
+
+  @override
+  String get assistantAllAlarmsActive => 'جميع تنبيهات الرحلة نشطة.';
+
+  @override
+  String travelAlarmTrainArrivesIn(int minutes) {
+    return 'يصل القطار خلال $minutes دقائق';
+  }
+
+  @override
+  String get travelAlarmNoActive => 'لا يوجد تنبيه نشط';
+
+  @override
+  String travelAlarmExitAt(String destination, int stations) {
+    return 'انزل في $destination، تبقت $stations محطات';
+  }
+
+  @override
+  String travelAlarmTransferAt(String station, int stations) {
+    return 'انتقل في $station، تبقت $stations محطات';
+  }
+
+  @override
+  String get travelAlarmDestinationFallback => 'الوجهة';
+
+  @override
+  String get assistantCameraGuideAction => 'دليل الكاميرا';
+
+  @override
+  String assistantMessageSemantics(String sender, String message) {
+    return '$sender، $message';
+  }
+
+  @override
   String get voiceTapToSpeak => 'انقر للتحدث';
 
   @override
@@ -1926,4 +2099,281 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeFilterLRTPegangsaan => 'Pegangsaan Dua - Velodrome Line';
+
+  @override
+  String get actionRetry => 'حاول مرة أخرى';
+
+  @override
+  String get homeAreaCentral => 'وسط جاكرتا';
+
+  @override
+  String get homeAreaSouth => 'جنوب جاكرتا';
+
+  @override
+  String get homeAreaWest => 'غرب جاكرتا';
+
+  @override
+  String get homeAreaEast => 'شرق جاكرتا';
+
+  @override
+  String get homeAreaNorth => 'شمال جاكرتا';
+
+  @override
+  String get homeAreaGreaterJakarta => 'جاكرتا الكبرى (المدن المحيطة)';
+
+  @override
+  String mapNearStation(String station) {
+    return 'أنت بالقرب من محطة $station';
+  }
+
+  @override
+  String get mapNearestMarkerNote =>
+      'تشير العلامة الزرقاء إلى أقرب محطة، وليس إلى موقع GPS الدقيق على الخريطة التخطيطية.';
+
+  @override
+  String get mapLocateMe => 'العثور على موقعي';
+
+  @override
+  String get routePreviewTitle => 'معاينة الرحلة';
+
+  @override
+  String get routePreviewUnavailable => 'معاينة الخط غير متاحة.';
+
+  @override
+  String get routePreviewLineTitle => 'معاينة خط الرحلة';
+
+  @override
+  String routeCurrentLocation(String station) {
+    return 'أنت هنا: $station';
+  }
+
+  @override
+  String get routeDimmedLinesNote =>
+      'تم تعتيم الخطوط الأخرى لتسهيل رؤية مسار الرحلة.';
+
+  @override
+  String get routeBackToResults => 'العودة إلى نتائج الرحلة';
+
+  @override
+  String get routeShowLineMap => 'عرض الخط على الخريطة';
+
+  @override
+  String get routeColdStartHint =>
+      'إذا بدأ الخادم المجاني للتو، فانتظر بدء التشغيل ثم حاول مرة أخرى.';
+
+  @override
+  String routeSummarySemantics(int minutes, int stops, String fare) {
+    return '$minutes دقيقة، $stops محطات، الأجرة $fare';
+  }
+
+  @override
+  String routeTransferCount(int count) {
+    return '$count انتقالات';
+  }
+
+  @override
+  String get routeVoiceGuide => 'إرشاد صوتي للرحلة';
+
+  @override
+  String routeFromStation(String station) {
+    return 'من $station';
+  }
+
+  @override
+  String routeToStation(String station) {
+    return 'إلى $station';
+  }
+
+  @override
+  String get routeLiveEta => 'وقت الوصول المباشر';
+
+  @override
+  String get routeFocusJourney => 'التركيز على الرحلة';
+
+  @override
+  String get routeAllLines => 'كل الخطوط';
+
+  @override
+  String get stationLoadError =>
+      'الخادم قيد التشغيل أو انقطع الاتصال. تعذر تحميل بيانات المحطة.';
+
+  @override
+  String get ticketSelectedTrip => 'الرحلة المحددة';
+
+  @override
+  String get ticketPaymentConfirmation =>
+      'تصبح التذكرة نشطة فقط بعد تأكيد Xendit للدفع مع الخادم.';
+
+  @override
+  String get ticketOpenPayment => 'فتح الدفع';
+
+  @override
+  String get ticketCheckStatus => 'التحقق من الحالة';
+
+  @override
+  String ticketOwnerEmail(String email) {
+    return 'البريد الإلكتروني: $email';
+  }
+
+  @override
+  String get ticketGateInstruction => 'اعرض هذا الرمز عند البوابة';
+
+  @override
+  String ticketDepartureAt(String time) {
+    return 'المغادرة $time';
+  }
+
+  @override
+  String get ticketDeviceHeader => 'عرض التذاكر من هذا الجهاز';
+
+  @override
+  String ticketDeviceSemantics(String count) {
+    return 'عرض التذاكر من هذا الجهاز، $count';
+  }
+
+  @override
+  String get ticketEmailHeader => 'عرض تذاكر';
+
+  @override
+  String ticketEmailSemantics(String email) {
+    return 'عرض تذاكر $email';
+  }
+
+  @override
+  String get ticketPartialHistoryError => 'تعذر تحميل بعض سجل التذاكر';
+
+  @override
+  String get ticketEmptyCategory => 'لا توجد تذاكر في هذه الفئة.';
+
+  @override
+  String get ticketShowHistory => 'عرض السجل';
+
+  @override
+  String get ticketReload => 'إعادة تحميل التذاكر';
+
+  @override
+  String get ticketBackToList => 'العودة إلى قائمة التذاكر';
+
+  @override
+  String scheduleStatusUpcoming(int minutes) {
+    return 'المغادرة خلال $minutes دقائق';
+  }
+
+  @override
+  String get scheduleStatusSoon => 'المغادرة قريبًا';
+
+  @override
+  String get scheduleStatusNow => 'المغادرة الآن';
+
+  @override
+  String get scheduleStatusPassed => 'انتهى موعد الرحلة';
+
+  @override
+  String get scheduleStatusUnavailable => 'حالة الجدول غير متاحة';
+
+  @override
+  String get scheduleStatusDisclaimer =>
+      'تعتمد الحالة على الجدول، وليس على موقع القطار المباشر';
+
+  @override
+  String get scheduleServerActive => 'الخادم قيد التشغيل';
+
+  @override
+  String get scheduleBackendError =>
+      'اتصال الخادم الخلفي قيد التشغيل أو انقطع. حاول مرة أخرى دون اعتبار الجدول فارغًا.';
+
+  @override
+  String get scheduleDatasetNote =>
+      'جدول خط الركاب لشهر فبراير 2026 · حالة تلقائية حسب الجدول (وليست بيانات KAI مباشرة)';
+
+  @override
+  String get actionRepeat => 'إعادة';
+
+  @override
+  String get actionPause => 'إيقاف مؤقت';
+
+  @override
+  String get actionStop => 'إيقاف';
+
+  @override
+  String get facilityAccessibleLift => 'مصعد مهيأ';
+
+  @override
+  String get facilityEscalator => 'سلم متحرك';
+
+  @override
+  String get facilityPrayerRoom => 'غرفة صلاة';
+
+  @override
+  String get facilityAccessibleToilet => 'دورة مياه مهيأة';
+
+  @override
+  String get facilityCharger => 'شاحن';
+
+  @override
+  String get facilityMinimarket => 'متجر صغير';
+
+  @override
+  String get facilityNursingRoom => 'غرفة رضاعة';
+
+  @override
+  String get facilityAtmCenter => 'مركز صراف آلي';
+
+  @override
+  String get mapLocationServiceDisabled =>
+      'فعّل خدمة الموقع في الجهاز ثم حاول مرة أخرى.';
+
+  @override
+  String get mapLocationPermissionDenied =>
+      'إذن الموقع مطلوب للعثور على أقرب محطة.';
+
+  @override
+  String get stationVoiceEmpty => 'لا توجد محطات تطابق بحثك.';
+
+  @override
+  String stationVoiceFound(int count) {
+    return 'تم العثور على $count محطة. أبرز النتائج:';
+  }
+
+  @override
+  String routeNarrationSummary(
+    String from,
+    String to,
+    int minutes,
+    String currency,
+    String fare,
+  ) {
+    return 'المسار من $from إلى $to. الوقت المقدر للرحلة $minutes دقيقة. الأجرة $currency $fare.';
+  }
+
+  @override
+  String get ticketStatusPending => 'غير مدفوع';
+
+  @override
+  String get ticketStatusPaid => 'مدفوع';
+
+  @override
+  String get ticketStatusUsed => 'مستخدم';
+
+  @override
+  String get ticketStatusExpired => 'منتهي الصلاحية';
+
+  @override
+  String get ticketStatusCancelled => 'ملغى';
+
+  @override
+  String get ticketStatusUnknown => 'غير معروف';
+
+  @override
+  String get travelAlarmInactive => 'منبه الرحلة غير مفعّل';
+
+  @override
+  String get routeLoadError =>
+      'تعذر تحميل المسار. تحقق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get routeNoTransit => 'بدون تبديل';
+
+  @override
+  String get ticketEmailInputLabel => 'البريد الإلكتروني للتذاكر والسجل';
 }

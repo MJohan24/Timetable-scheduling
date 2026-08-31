@@ -6,12 +6,12 @@ import '../../domain/usecases/get_timetable.dart';
 
 class TimetableController {
   TimetableController()
-      : _getTimetable = GetTimetable(
-          TimetableRepositoryImpl(
-            remoteDataSource: TimetableRemoteDataSource(),
-            localDataSource: const TimetableLocalDataSource(),
-          ),
-        );
+    : _getTimetable = GetTimetable(
+        TimetableRepositoryImpl(
+          remoteDataSource: TimetableRemoteDataSource(),
+          localDataSource: const TimetableLocalDataSource(),
+        ),
+      );
 
   final GetTimetable _getTimetable;
 

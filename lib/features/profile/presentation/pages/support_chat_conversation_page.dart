@@ -59,6 +59,7 @@ class _SupportChatConversationPageState
   }
 
   List<_SupportMessage> _initialMessages(AppLocalizations l10n) {
+    final sampleData = widget.topic.sampleData(l10n);
     return [
       _SupportMessage(
         author: _SupportMessageAuthor.user,
@@ -67,6 +68,10 @@ class _SupportChatConversationPageState
       _SupportMessage(
         author: _SupportMessageAuthor.agent,
         text: widget.topic.greeting(l10n),
+      ),
+      _SupportMessage(
+        author: _SupportMessageAuthor.agent,
+        text: l10n.chatReceivedData(sampleData),
       ),
     ];
   }

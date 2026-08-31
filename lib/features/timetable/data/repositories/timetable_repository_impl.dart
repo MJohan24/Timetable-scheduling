@@ -62,14 +62,13 @@ class TimetableRepositoryImpl implements TimetableRepository {
     bool? isWeekend,
   }) {
     return localDataSource.getSchedules().where((s) {
-      final matchStation = station == null ||
+      final matchStation =
+          station == null ||
           station == 'Semua Stasiun' ||
           s.stationName.toLowerCase() == station.toLowerCase();
-      final matchType = trainType == null ||
-          trainType == 'Semua' ||
-          s.trainType == trainType;
-      final matchWeekend =
-          isWeekend == null || s.isWeekend == isWeekend;
+      final matchType =
+          trainType == null || trainType == 'Semua' || s.trainType == trainType;
+      final matchWeekend = isWeekend == null || s.isWeekend == isWeekend;
       return matchStation && matchType && matchWeekend;
     }).toList();
   }

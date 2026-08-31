@@ -93,6 +93,87 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileLargeText => '大文本和阅读路线';
 
   @override
+  String get profileBlindGuide => '盲人向导';
+
+  @override
+  String get profileBlindGuideDescription => '打开摄像头并自动启用语音引导';
+
+  @override
+  String get cameraGuideActiveAnnouncement => '摄像头向导已启用。请将摄像头朝向前方。';
+
+  @override
+  String get cameraGuideTitle => '相机向导';
+
+  @override
+  String get cameraGuideBack => '返回';
+
+  @override
+  String cameraGuideStatus(String status) {
+    return '相机状态：$status';
+  }
+
+  @override
+  String get cameraGuideStateLoading => '加载中';
+
+  @override
+  String get cameraGuideStateActive => '已启用';
+
+  @override
+  String get cameraGuideStatePermissionDenied => '需要权限';
+
+  @override
+  String get cameraGuideStateOffline => '离线';
+
+  @override
+  String get cameraGuideStateError => '错误';
+
+  @override
+  String get cameraGuideStateStopped => '已停止';
+
+  @override
+  String get cameraGuidePermissionRequired => '需要相机权限。如果之前已永久拒绝，请在设置中启用。';
+
+  @override
+  String get cameraGuideSafetyWarning => '检测结果可能有误。请使用手杖、由他人陪同或向工作人员求助。';
+
+  @override
+  String get cameraGuideRetry => '重试';
+
+  @override
+  String get cameraGuideStart => '启动向导';
+
+  @override
+  String get cameraGuideStop => '停止向导';
+
+  @override
+  String get cameraGuideLoadingMessage => '正在准备相机…';
+
+  @override
+  String get cameraGuideActiveMessage => '请将相机朝向前方。向导已启用。';
+
+  @override
+  String get cameraGuideUnavailableMessage => '无法使用相机。';
+
+  @override
+  String get cameraGuideOfflineMessage => '本地检测能力有限；AI 连接不可用。';
+
+  @override
+  String get cameraGuideStoppedMessage => '相机向导已停止。';
+
+  @override
+  String get cameraGuideNoClearObject => '前方尚未检测到清晰物体。';
+
+  @override
+  String cameraGuideObjectCount(int count) {
+    return '前方检测到 $count 个物体。';
+  }
+
+  @override
+  String cameraGuideLabelsDetected(String labels) {
+    return '前方检测到 $labels。';
+  }
+
+  @override
   String get profileHelpCenter => '帮助中心';
 
   @override
@@ -108,7 +189,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authRegisterTitle => '创建账户';
 
   @override
-  String get authRegisterSubtitle => '注册不会影响访客使用时刻表、路线查询和购票功能。';
+  String get authRegisterSubtitle => '注册不会影响访客查看时刻表、查询路线和购票。';
 
   @override
   String get authName => '姓名';
@@ -150,13 +231,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authSubmitRegister => '注册';
 
   @override
-  String get authCreateAccount => '还没有账户？注册';
+  String get authCreateAccount => '还没有账户？立即注册';
 
   @override
   String get authBackToLogin => '已有账户？登录';
 
   @override
-  String get authGuestStillAvailable => '无需账户，您仍可作为访客查看时刻表、查询路线和购买车票。';
+  String get authGuestStillAvailable => '无需账户，您仍可查看时刻表、查询路线并以访客身份购票。';
 
   @override
   String get authInvalidCredentials => '电子邮箱或密码不正确。';
@@ -165,7 +246,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authEmailUsed => '此电子邮箱已注册。';
 
   @override
-  String get authNetworkError => '无法连接服务器。请检查网络连接后重试。';
+  String get authNetworkError => '无法连接服务器。请检查网络后重试。';
 
   @override
   String get authGenericError => '无法处理请求，请重试。';
@@ -177,7 +258,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileOfflineSession => '账户已保存 · 当前离线';
 
   @override
-  String get profileOfflineHint => '网络恢复后，部分更改将可用。';
+  String get profileOfflineHint => '恢复连接后即可使用部分更改。';
 
   @override
   String get profileEdit => '编辑个人资料';
@@ -186,7 +267,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileLogout => '退出登录';
 
   @override
-  String get profileLogoutConfirm => '要在此设备上退出登录吗？访客功能仍可使用。';
+  String get profileLogoutConfirm => '要在此设备上退出吗？访客功能仍可使用。';
 
   @override
   String get profileCancel => '取消';
@@ -861,6 +942,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatSharedData => '共享数据';
 
   @override
+  String chatReceivedData(String data) {
+    return '已收到的数据：\n$data';
+  }
+
+  @override
   String get issueLateEtaTitle => '已晚 ETA';
 
   @override
@@ -1006,6 +1092,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get topicTicketShared => '访客模式、票证 ID 和最后路线';
 
   @override
+  String get topicTicketSampleData =>
+      '车票代码：TKT-20260827-001\n路线：Manggarai – Tanah Abang\n出行日期：2026年8月27日\n状态：有效';
+
+  @override
   String get topicTicketAction => '开始票务聊天';
 
   @override
@@ -1031,6 +1121,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get topicScheduleShared => '最后路线、出发地、目的地、行程时间';
+
+  @override
+  String get topicScheduleSampleData =>
+      '出发站：Manggarai\n目的地：Jakarta Kota\n列车编号：KA 1184\n发车时间：10:25 WIB\n站台：3';
 
   @override
   String get topicScheduleAction => '开始安排聊天';
@@ -1059,6 +1153,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get topicPaymentShared => '最后交易状态、票证代码和时间';
+
+  @override
+  String get topicPaymentSampleData =>
+      '交易编号：TRX-20260827-001\n方式：QRIS\n金额：Rp7.800\n时间：2026年8月27日 10:20 WIB\n状态：成功';
 
   @override
   String get topicPaymentAction => '开始付款聊天';
@@ -1668,6 +1766,71 @@ class AppLocalizationsZh extends AppLocalizations {
   String get assistantRetry => '重试';
 
   @override
+  String get assistantUnknownDestination => '我不明白您的目的地。';
+
+  @override
+  String assistantDemoTranscript(String destination, String origin) {
+    return '我想从 $origin 前往 $destination。';
+  }
+
+  @override
+  String get assistantDemoResponse => '最快路线需要 7 分钟。列车将在 5 分钟后到达。';
+
+  @override
+  String get assistantUnavailable => '助手暂时不可用。请重试或查看车站官方信息。';
+
+  @override
+  String get assistantUnknownCommand =>
+      '我不明白该指令。请尝试：“下一个提醒是什么时候？”或“启用我车票的所有提醒”。';
+
+  @override
+  String get assistantNoActiveTicket => '没有有效车票';
+
+  @override
+  String get assistantNoActiveAlarm => '没有启用的提醒。';
+
+  @override
+  String get assistantAllAlarmsCancelled => '所有行程提醒均已取消。';
+
+  @override
+  String get assistantDestinationAlarmAlreadyOff => '目的地提醒已关闭。';
+
+  @override
+  String get assistantDestinationAlarmDisabled => '目的地提醒已停用。';
+
+  @override
+  String get assistantAllAlarmsActive => '所有行程提醒均已启用。';
+
+  @override
+  String travelAlarmTrainArrivesIn(int minutes) {
+    return '列车将在 $minutes 分钟后到达';
+  }
+
+  @override
+  String get travelAlarmNoActive => '没有启用的提醒';
+
+  @override
+  String travelAlarmExitAt(String destination, int stations) {
+    return '在 $destination 下车，还有 $stations 站';
+  }
+
+  @override
+  String travelAlarmTransferAt(String station, int stations) {
+    return '在 $station 换乘，还有 $stations 站';
+  }
+
+  @override
+  String get travelAlarmDestinationFallback => '目的地';
+
+  @override
+  String get assistantCameraGuideAction => '相机向导';
+
+  @override
+  String assistantMessageSemantics(String sender, String message) {
+    return '$sender，$message';
+  }
+
+  @override
   String get voiceTapToSpeak => '点击即可说话';
 
   @override
@@ -1877,6 +2040,273 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeFilterLRTPegangsaan => 'Pegangsaan Dua - Velodrome Line';
+
+  @override
+  String get actionRetry => '重试';
+
+  @override
+  String get homeAreaCentral => '雅加达中部';
+
+  @override
+  String get homeAreaSouth => '雅加达南部';
+
+  @override
+  String get homeAreaWest => '雅加达西部';
+
+  @override
+  String get homeAreaEast => '雅加达东部';
+
+  @override
+  String get homeAreaNorth => '雅加达北部';
+
+  @override
+  String get homeAreaGreaterJakarta => '大雅加达（周边城市）';
+
+  @override
+  String mapNearStation(String station) {
+    return '您位于 $station 站附近';
+  }
+
+  @override
+  String get mapNearestMarkerNote => '蓝色标记表示最近的车站点，并非您在示意图上的精确 GPS 位置。';
+
+  @override
+  String get mapLocateMe => '查找我的位置';
+
+  @override
+  String get routePreviewTitle => '行程预览';
+
+  @override
+  String get routePreviewUnavailable => '线路预览不可用。';
+
+  @override
+  String get routePreviewLineTitle => '行程线路预览';
+
+  @override
+  String routeCurrentLocation(String station) {
+    return '您在这里：$station';
+  }
+
+  @override
+  String get routeDimmedLinesNote => '其他线路已变暗，以便更清楚地查看行程路线。';
+
+  @override
+  String get routeBackToResults => '返回行程结果';
+
+  @override
+  String get routeShowLineMap => '在地图上查看线路';
+
+  @override
+  String get routeColdStartHint => '如果免费服务器刚刚启动，请等待冷启动后重试。';
+
+  @override
+  String routeSummarySemantics(int minutes, int stops, String fare) {
+    return '$minutes 分钟，$stops 站，票价 $fare';
+  }
+
+  @override
+  String routeTransferCount(int count) {
+    return '换乘 $count 次';
+  }
+
+  @override
+  String get routeVoiceGuide => '行程语音指南';
+
+  @override
+  String routeFromStation(String station) {
+    return '从 $station';
+  }
+
+  @override
+  String routeToStation(String station) {
+    return '到 $station';
+  }
+
+  @override
+  String get routeLiveEta => '实时预计到达时间';
+
+  @override
+  String get routeFocusJourney => '聚焦行程';
+
+  @override
+  String get routeAllLines => '所有线路';
+
+  @override
+  String get stationLoadError => '服务器正在启动或连接已中断。无法加载车站数据。';
+
+  @override
+  String get ticketSelectedTrip => '已选行程';
+
+  @override
+  String get ticketPaymentConfirmation => '只有在 Xendit 向服务器确认付款后，车票才会生效。';
+
+  @override
+  String get ticketOpenPayment => '打开付款';
+
+  @override
+  String get ticketCheckStatus => '检查状态';
+
+  @override
+  String ticketOwnerEmail(String email) {
+    return '电子邮件：$email';
+  }
+
+  @override
+  String get ticketGateInstruction => '请在闸机处出示此代码';
+
+  @override
+  String ticketDepartureAt(String time) {
+    return '$time 发车';
+  }
+
+  @override
+  String get ticketDeviceHeader => '显示此设备上的车票';
+
+  @override
+  String ticketDeviceSemantics(String count) {
+    return '显示此设备上的车票，$count';
+  }
+
+  @override
+  String get ticketEmailHeader => '显示以下账户的车票';
+
+  @override
+  String ticketEmailSemantics(String email) {
+    return '显示 $email 的车票';
+  }
+
+  @override
+  String get ticketPartialHistoryError => '部分车票记录无法加载';
+
+  @override
+  String get ticketEmptyCategory => '此类别中没有车票。';
+
+  @override
+  String get ticketShowHistory => '显示记录';
+
+  @override
+  String get ticketReload => '重新加载车票';
+
+  @override
+  String get ticketBackToList => '返回车票列表';
+
+  @override
+  String scheduleStatusUpcoming(int minutes) {
+    return '$minutes 分钟后发车';
+  }
+
+  @override
+  String get scheduleStatusSoon => '即将发车';
+
+  @override
+  String get scheduleStatusNow => '正在发车';
+
+  @override
+  String get scheduleStatusPassed => '班次已过';
+
+  @override
+  String get scheduleStatusUnavailable => '班次状态不可用';
+
+  @override
+  String get scheduleStatusDisclaimer => '状态基于时刻表，而非列车实时位置';
+
+  @override
+  String get scheduleServerActive => '服务器正在启动';
+
+  @override
+  String get scheduleBackendError => '后端连接仍在启动或已中断。请重试，不要将时刻表视为空。';
+
+  @override
+  String get scheduleDatasetNote =>
+      '2026 年 2 月通勤线时刻表 · 状态根据时刻表自动计算（非 KAI 实时数据）';
+
+  @override
+  String get actionRepeat => '重复';
+
+  @override
+  String get actionPause => '暂停';
+
+  @override
+  String get actionStop => '停止';
+
+  @override
+  String get facilityAccessibleLift => '无障碍电梯';
+
+  @override
+  String get facilityEscalator => '扶梯';
+
+  @override
+  String get facilityPrayerRoom => '祈祷室';
+
+  @override
+  String get facilityAccessibleToilet => '无障碍洗手间';
+
+  @override
+  String get facilityCharger => '充电设施';
+
+  @override
+  String get facilityMinimarket => '便利店';
+
+  @override
+  String get facilityNursingRoom => '母婴室';
+
+  @override
+  String get facilityAtmCenter => 'ATM 中心';
+
+  @override
+  String get mapLocationServiceDisabled => '请开启设备定位服务，然后重试。';
+
+  @override
+  String get mapLocationPermissionDenied => '需要定位权限才能查找最近的车站。';
+
+  @override
+  String get stationVoiceEmpty => '没有符合搜索条件的车站。';
+
+  @override
+  String stationVoiceFound(int count) {
+    return '找到 $count 个车站。热门结果：';
+  }
+
+  @override
+  String routeNarrationSummary(
+    String from,
+    String to,
+    int minutes,
+    String currency,
+    String fare,
+  ) {
+    return '从 $from 到 $to。预计行程时间 $minutes 分钟。票价为 $currency $fare。';
+  }
+
+  @override
+  String get ticketStatusPending => '未付款';
+
+  @override
+  String get ticketStatusPaid => '已付款';
+
+  @override
+  String get ticketStatusUsed => '已使用';
+
+  @override
+  String get ticketStatusExpired => '已过期';
+
+  @override
+  String get ticketStatusCancelled => '已取消';
+
+  @override
+  String get ticketStatusUnknown => '未知';
+
+  @override
+  String get travelAlarmInactive => '行程闹钟未启用';
+
+  @override
+  String get routeLoadError => '无法加载路线。请检查网络连接后重试。';
+
+  @override
+  String get routeNoTransit => '无需换乘';
+
+  @override
+  String get ticketEmailInputLabel => '用于车票和历史记录的邮箱';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1968,6 +2398,87 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get profileLargeText => '大文本和阅读路线';
 
   @override
+  String get profileBlindGuide => '盲人向导';
+
+  @override
+  String get profileBlindGuideDescription => '打开摄像头并自动启用语音引导';
+
+  @override
+  String get cameraGuideActiveAnnouncement => '摄像头向导已启用。请将摄像头朝向前方。';
+
+  @override
+  String get cameraGuideTitle => '相机向导';
+
+  @override
+  String get cameraGuideBack => '返回';
+
+  @override
+  String cameraGuideStatus(String status) {
+    return '相机状态：$status';
+  }
+
+  @override
+  String get cameraGuideStateLoading => '加载中';
+
+  @override
+  String get cameraGuideStateActive => '已启用';
+
+  @override
+  String get cameraGuideStatePermissionDenied => '需要权限';
+
+  @override
+  String get cameraGuideStateOffline => '离线';
+
+  @override
+  String get cameraGuideStateError => '错误';
+
+  @override
+  String get cameraGuideStateStopped => '已停止';
+
+  @override
+  String get cameraGuidePermissionRequired => '需要相机权限。如果之前已永久拒绝，请在设置中启用。';
+
+  @override
+  String get cameraGuideSafetyWarning => '检测结果可能有误。请使用手杖、由他人陪同或向工作人员求助。';
+
+  @override
+  String get cameraGuideRetry => '重试';
+
+  @override
+  String get cameraGuideStart => '启动向导';
+
+  @override
+  String get cameraGuideStop => '停止向导';
+
+  @override
+  String get cameraGuideLoadingMessage => '正在准备相机…';
+
+  @override
+  String get cameraGuideActiveMessage => '请将相机朝向前方。向导已启用。';
+
+  @override
+  String get cameraGuideUnavailableMessage => '无法使用相机。';
+
+  @override
+  String get cameraGuideOfflineMessage => '本地检测能力有限；AI 连接不可用。';
+
+  @override
+  String get cameraGuideStoppedMessage => '相机向导已停止。';
+
+  @override
+  String get cameraGuideNoClearObject => '前方尚未检测到清晰物体。';
+
+  @override
+  String cameraGuideObjectCount(int count) {
+    return '前方检测到 $count 个物体。';
+  }
+
+  @override
+  String cameraGuideLabelsDetected(String labels) {
+    return '前方检测到 $labels。';
+  }
+
+  @override
   String get profileHelpCenter => '帮助中心';
 
   @override
@@ -1983,7 +2494,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get authRegisterTitle => '创建账户';
 
   @override
-  String get authRegisterSubtitle => '注册不会影响访客使用时刻表、路线查询和购票功能。';
+  String get authRegisterSubtitle => '注册不会影响访客查看时刻表、查询路线和购票。';
 
   @override
   String get authName => '姓名';
@@ -2025,13 +2536,13 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get authSubmitRegister => '注册';
 
   @override
-  String get authCreateAccount => '还没有账户？注册';
+  String get authCreateAccount => '还没有账户？立即注册';
 
   @override
   String get authBackToLogin => '已有账户？登录';
 
   @override
-  String get authGuestStillAvailable => '无需账户，您仍可作为访客查看时刻表、查询路线和购买车票。';
+  String get authGuestStillAvailable => '无需账户，您仍可查看时刻表、查询路线并以访客身份购票。';
 
   @override
   String get authInvalidCredentials => '电子邮箱或密码不正确。';
@@ -2040,7 +2551,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get authEmailUsed => '此电子邮箱已注册。';
 
   @override
-  String get authNetworkError => '无法连接服务器。请检查网络连接后重试。';
+  String get authNetworkError => '无法连接服务器。请检查网络后重试。';
 
   @override
   String get authGenericError => '无法处理请求，请重试。';
@@ -2052,7 +2563,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get profileOfflineSession => '账户已保存 · 当前离线';
 
   @override
-  String get profileOfflineHint => '网络恢复后，部分更改将可用。';
+  String get profileOfflineHint => '恢复连接后即可使用部分更改。';
 
   @override
   String get profileEdit => '编辑个人资料';
@@ -2061,7 +2572,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get profileLogout => '退出登录';
 
   @override
-  String get profileLogoutConfirm => '要在此设备上退出登录吗？访客功能仍可使用。';
+  String get profileLogoutConfirm => '要在此设备上退出吗？访客功能仍可使用。';
 
   @override
   String get profileCancel => '取消';
@@ -2736,6 +3247,11 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get chatSharedData => '共享数据';
 
   @override
+  String chatReceivedData(String data) {
+    return '已收到的数据：\n$data';
+  }
+
+  @override
   String get issueLateEtaTitle => '已晚 ETA';
 
   @override
@@ -2881,6 +3397,10 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get topicTicketShared => '访客模式、票证 ID 和最后路线';
 
   @override
+  String get topicTicketSampleData =>
+      '车票代码：TKT-20260827-001\n路线：Manggarai – Tanah Abang\n出行日期：2026年8月27日\n状态：有效';
+
+  @override
   String get topicTicketAction => '开始票务聊天';
 
   @override
@@ -2906,6 +3426,10 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get topicScheduleShared => '最后路线、出发地、目的地、行程时间';
+
+  @override
+  String get topicScheduleSampleData =>
+      '出发站：Manggarai\n目的地：Jakarta Kota\n列车编号：KA 1184\n发车时间：10:25 WIB\n站台：3';
 
   @override
   String get topicScheduleAction => '开始安排聊天';
@@ -2934,6 +3458,10 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get topicPaymentShared => '最后交易状态、票证代码和时间';
+
+  @override
+  String get topicPaymentSampleData =>
+      '交易编号：TRX-20260827-001\n方式：QRIS\n金额：Rp7.800\n时间：2026年8月27日 10:20 WIB\n状态：成功';
 
   @override
   String get topicPaymentAction => '开始付款聊天';
@@ -3543,6 +4071,71 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get assistantRetry => '重试';
 
   @override
+  String get assistantUnknownDestination => '我不明白您的目的地。';
+
+  @override
+  String assistantDemoTranscript(String destination, String origin) {
+    return '我想从 $origin 前往 $destination。';
+  }
+
+  @override
+  String get assistantDemoResponse => '最快路线需要 7 分钟。列车将在 5 分钟后到达。';
+
+  @override
+  String get assistantUnavailable => '助手暂时不可用。请重试或查看车站官方信息。';
+
+  @override
+  String get assistantUnknownCommand =>
+      '我不明白该指令。请尝试：“下一个提醒是什么时候？”或“启用我车票的所有提醒”。';
+
+  @override
+  String get assistantNoActiveTicket => '没有有效车票';
+
+  @override
+  String get assistantNoActiveAlarm => '没有启用的提醒。';
+
+  @override
+  String get assistantAllAlarmsCancelled => '所有行程提醒均已取消。';
+
+  @override
+  String get assistantDestinationAlarmAlreadyOff => '目的地提醒已关闭。';
+
+  @override
+  String get assistantDestinationAlarmDisabled => '目的地提醒已停用。';
+
+  @override
+  String get assistantAllAlarmsActive => '所有行程提醒均已启用。';
+
+  @override
+  String travelAlarmTrainArrivesIn(int minutes) {
+    return '列车将在 $minutes 分钟后到达';
+  }
+
+  @override
+  String get travelAlarmNoActive => '没有启用的提醒';
+
+  @override
+  String travelAlarmExitAt(String destination, int stations) {
+    return '在 $destination 下车，还有 $stations 站';
+  }
+
+  @override
+  String travelAlarmTransferAt(String station, int stations) {
+    return '在 $station 换乘，还有 $stations 站';
+  }
+
+  @override
+  String get travelAlarmDestinationFallback => '目的地';
+
+  @override
+  String get assistantCameraGuideAction => '相机向导';
+
+  @override
+  String assistantMessageSemantics(String sender, String message) {
+    return '$sender，$message';
+  }
+
+  @override
   String get voiceTapToSpeak => '点击即可说话';
 
   @override
@@ -3752,4 +4345,271 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get homeFilterLRTPegangsaan => 'Pegangsaan Dua - Velodrome Line';
+
+  @override
+  String get actionRetry => '重试';
+
+  @override
+  String get homeAreaCentral => '雅加达中部';
+
+  @override
+  String get homeAreaSouth => '雅加达南部';
+
+  @override
+  String get homeAreaWest => '雅加达西部';
+
+  @override
+  String get homeAreaEast => '雅加达东部';
+
+  @override
+  String get homeAreaNorth => '雅加达北部';
+
+  @override
+  String get homeAreaGreaterJakarta => '大雅加达（周边城市）';
+
+  @override
+  String mapNearStation(String station) {
+    return '您位于 $station 站附近';
+  }
+
+  @override
+  String get mapNearestMarkerNote => '蓝色标记表示最近的车站点，并非您在示意图上的精确 GPS 位置。';
+
+  @override
+  String get mapLocateMe => '查找我的位置';
+
+  @override
+  String get routePreviewTitle => '行程预览';
+
+  @override
+  String get routePreviewUnavailable => '线路预览不可用。';
+
+  @override
+  String get routePreviewLineTitle => '行程线路预览';
+
+  @override
+  String routeCurrentLocation(String station) {
+    return '您在这里：$station';
+  }
+
+  @override
+  String get routeDimmedLinesNote => '其他线路已变暗，以便更清楚地查看行程路线。';
+
+  @override
+  String get routeBackToResults => '返回行程结果';
+
+  @override
+  String get routeShowLineMap => '在地图上查看线路';
+
+  @override
+  String get routeColdStartHint => '如果免费服务器刚刚启动，请等待冷启动后重试。';
+
+  @override
+  String routeSummarySemantics(int minutes, int stops, String fare) {
+    return '$minutes 分钟，$stops 站，票价 $fare';
+  }
+
+  @override
+  String routeTransferCount(int count) {
+    return '换乘 $count 次';
+  }
+
+  @override
+  String get routeVoiceGuide => '行程语音指南';
+
+  @override
+  String routeFromStation(String station) {
+    return '从 $station';
+  }
+
+  @override
+  String routeToStation(String station) {
+    return '到 $station';
+  }
+
+  @override
+  String get routeLiveEta => '实时预计到达时间';
+
+  @override
+  String get routeFocusJourney => '聚焦行程';
+
+  @override
+  String get routeAllLines => '所有线路';
+
+  @override
+  String get stationLoadError => '服务器正在启动或连接已中断。无法加载车站数据。';
+
+  @override
+  String get ticketSelectedTrip => '已选行程';
+
+  @override
+  String get ticketPaymentConfirmation => '只有在 Xendit 向服务器确认付款后，车票才会生效。';
+
+  @override
+  String get ticketOpenPayment => '打开付款';
+
+  @override
+  String get ticketCheckStatus => '检查状态';
+
+  @override
+  String ticketOwnerEmail(String email) {
+    return '电子邮件：$email';
+  }
+
+  @override
+  String get ticketGateInstruction => '请在闸机处出示此代码';
+
+  @override
+  String ticketDepartureAt(String time) {
+    return '$time 发车';
+  }
+
+  @override
+  String get ticketDeviceHeader => '显示此设备上的车票';
+
+  @override
+  String ticketDeviceSemantics(String count) {
+    return '显示此设备上的车票，$count';
+  }
+
+  @override
+  String get ticketEmailHeader => '显示以下账户的车票';
+
+  @override
+  String ticketEmailSemantics(String email) {
+    return '显示 $email 的车票';
+  }
+
+  @override
+  String get ticketPartialHistoryError => '部分车票记录无法加载';
+
+  @override
+  String get ticketEmptyCategory => '此类别中没有车票。';
+
+  @override
+  String get ticketShowHistory => '显示记录';
+
+  @override
+  String get ticketReload => '重新加载车票';
+
+  @override
+  String get ticketBackToList => '返回车票列表';
+
+  @override
+  String scheduleStatusUpcoming(int minutes) {
+    return '$minutes 分钟后发车';
+  }
+
+  @override
+  String get scheduleStatusSoon => '即将发车';
+
+  @override
+  String get scheduleStatusNow => '正在发车';
+
+  @override
+  String get scheduleStatusPassed => '班次已过';
+
+  @override
+  String get scheduleStatusUnavailable => '班次状态不可用';
+
+  @override
+  String get scheduleStatusDisclaimer => '状态基于时刻表，而非列车实时位置';
+
+  @override
+  String get scheduleServerActive => '服务器正在启动';
+
+  @override
+  String get scheduleBackendError => '后端连接仍在启动或已中断。请重试，不要将时刻表视为空。';
+
+  @override
+  String get scheduleDatasetNote =>
+      '2026 年 2 月通勤线时刻表 · 状态根据时刻表自动计算（非 KAI 实时数据）';
+
+  @override
+  String get actionRepeat => '重复';
+
+  @override
+  String get actionPause => '暂停';
+
+  @override
+  String get actionStop => '停止';
+
+  @override
+  String get facilityAccessibleLift => '无障碍电梯';
+
+  @override
+  String get facilityEscalator => '扶梯';
+
+  @override
+  String get facilityPrayerRoom => '祈祷室';
+
+  @override
+  String get facilityAccessibleToilet => '无障碍洗手间';
+
+  @override
+  String get facilityCharger => '充电设施';
+
+  @override
+  String get facilityMinimarket => '便利店';
+
+  @override
+  String get facilityNursingRoom => '母婴室';
+
+  @override
+  String get facilityAtmCenter => 'ATM 中心';
+
+  @override
+  String get mapLocationServiceDisabled => '请开启设备定位服务，然后重试。';
+
+  @override
+  String get mapLocationPermissionDenied => '需要定位权限才能查找最近的车站。';
+
+  @override
+  String get stationVoiceEmpty => '没有符合搜索条件的车站。';
+
+  @override
+  String stationVoiceFound(int count) {
+    return '找到 $count 个车站。热门结果：';
+  }
+
+  @override
+  String routeNarrationSummary(
+    String from,
+    String to,
+    int minutes,
+    String currency,
+    String fare,
+  ) {
+    return '从 $from 到 $to。预计行程时间 $minutes 分钟。票价为 $currency $fare。';
+  }
+
+  @override
+  String get ticketStatusPending => '未付款';
+
+  @override
+  String get ticketStatusPaid => '已付款';
+
+  @override
+  String get ticketStatusUsed => '已使用';
+
+  @override
+  String get ticketStatusExpired => '已过期';
+
+  @override
+  String get ticketStatusCancelled => '已取消';
+
+  @override
+  String get ticketStatusUnknown => '未知';
+
+  @override
+  String get travelAlarmInactive => '行程闹钟未启用';
+
+  @override
+  String get routeLoadError => '无法加载路线。请检查网络连接后重试。';
+
+  @override
+  String get routeNoTransit => '无需换乘';
+
+  @override
+  String get ticketEmailInputLabel => '用于车票和历史记录的邮箱';
 }

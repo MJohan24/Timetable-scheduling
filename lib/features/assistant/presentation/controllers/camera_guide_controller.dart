@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_object_detection/google_mlkit_object_detection.dart';
 
 import '../../data/datasources/vision_guide_remote_data_source.dart';
+import '../models/camera_guide_copy.dart';
+import '../utils/nv21_jpeg_encoder.dart';
 
 enum CameraGuideState {
   loading,
@@ -23,9 +26,11 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
     CameraController? camera,
     FlutterTts? tts,
     VisionGuideRemoteDataSource? vision,
+    CameraGuideCopy? copy,
   }) : _camera = camera,
        _tts = tts ?? FlutterTts(),
-       _vision = vision ?? VisionGuideRemoteDataSource();
+       _vision = vision ?? VisionGuideRemoteDataSource(),
+       _copy = copy ?? CameraGuideCopy.indonesian();
 
   CameraController? _camera;
   final FlutterTts _tts;
@@ -36,14 +41,44 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
   bool _visionBusy = false;
   bool _busy = false;
   bool _stopped = false;
+  int _sessionId = 0;
+  bool _observingLifecycle = false;
+  bool _pausedByLifecycle = false;
+  bool _disposed = false;
+  Future<void>? _lifecyclePause;
 
   CameraGuideState state = CameraGuideState.loading;
-  String message = 'Menyiapkan kamera…';
+  CameraGuideCopy _copy;
+  String message = '';
   CameraController? get camera => _camera;
+  CameraGuideCopy get copy => _copy;
+
+  void configure(CameraGuideCopy value) {
+    final previous = _copy;
+    _copy = value;
+    if (message.isEmpty || message == previous.loading) {
+      message = value.loading;
+    } else if (message == previous.active) {
+      message = value.active;
+    } else if (message == previous.unavailable) {
+      message = value.unavailable;
+    } else if (message == previous.offline) {
+      message = value.offline;
+    } else if (message == previous.stopped) {
+      message = value.stopped;
+    }
+    _notifyIfMounted();
+  }
 
   Future<void> start() async {
+    _sessionId += 1;
     _stopped = false;
-    WidgetsBinding.instance.addObserver(this);
+    _busy = false;
+    _visionBusy = false;
+    if (!_observingLifecycle) {
+      WidgetsBinding.instance.addObserver(this);
+      _observingLifecycle = true;
+    }
     if (_camera != null) {
       await _startDetectorAndStream();
       return;
@@ -51,7 +86,7 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        throw CameraException('NoCamera', 'Kamera tidak ditemukan.');
+        throw CameraException('NoCamera', copy.unavailable);
       }
       _camera = CameraController(
         cameras.firstWhere(
@@ -61,7 +96,7 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
         ResolutionPreset.medium,
         enableAudio: false,
         imageFormatGroup: Platform.isAndroid
-            ? ImageFormatGroup.jpeg
+            ? ImageFormatGroup.nv21
             : ImageFormatGroup.bgra8888,
       );
       await _camera!.initialize();
@@ -74,22 +109,22 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
               error.code == 'CameraAccessRestricted'
           ? CameraGuideState.permissionDenied
           : CameraGuideState.error;
-      message = error.description ?? 'Kamera tidak dapat digunakan.';
-      notifyListeners();
+      message = copy.unavailable;
+      _notifyIfMounted();
     } catch (_) {
       await _camera?.dispose();
       _camera = null;
       state = CameraGuideState.error;
-      message = 'Kamera tidak dapat digunakan.';
-      notifyListeners();
+      message = copy.unavailable;
+      _notifyIfMounted();
     }
   }
 
   Future<void> restart() async {
     await stop();
     state = CameraGuideState.loading;
-    message = 'Menyiapkan kamera…';
-    notifyListeners();
+    message = copy.loading;
+    _notifyIfMounted();
     await start();
   }
 
@@ -103,20 +138,22 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
     );
     await _camera!.startImageStream(_processImage);
     state = CameraGuideState.active;
-    message = 'Arahkan kamera ke depan. Pemandu aktif.';
-    notifyListeners();
+    message = copy.active;
+    _notifyIfMounted();
   }
 
   Future<void> _processImage(CameraImage image) async {
     if (_busy || _stopped || _detector == null || _camera == null) return;
+    final sessionId = _sessionId;
     _busy = true;
     try {
-      _sendRemoteVisionIfDue(image);
+      _sendRemoteVisionIfDue(image, sessionId: sessionId);
       final input = _inputImageFromCameraImage(image);
       if (input == null) return;
       final objects = await _detector!.processImage(input);
+      if (_stopped || sessionId != _sessionId) return;
       if (objects.isEmpty) {
-        _announce('Belum ada objek jelas di depan.');
+        _announce(copy.noClearObject);
         return;
       }
       final labels = objects
@@ -125,19 +162,20 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
           .take(2)
           .toList(growable: false);
       final description = labels.isEmpty
-          ? '${objects.length} objek terdeteksi di depan.'
-          : '${labels.join(' dan ')} terdeteksi di depan.';
+          ? copy.objectCount(objects.length)
+          : copy.labelsDetected(labels);
       _announce(description);
     } catch (_) {
+      if (_stopped || sessionId != _sessionId) return;
       state = CameraGuideState.offline;
-      message = 'Deteksi lokal terbatas; koneksi AI tidak tersedia.';
-      notifyListeners();
+      message = copy.offline;
+      _notifyIfMounted();
     } finally {
-      _busy = false;
+      if (sessionId == _sessionId) _busy = false;
     }
   }
 
-  void _sendRemoteVisionIfDue(CameraImage image) {
+  void _sendRemoteVisionIfDue(CameraImage image, {required int sessionId}) {
     if (!Platform.isAndroid || _visionBusy || image.planes.length != 1) return;
     final now = DateTime.now();
     if (_lastVisionRequest != null &&
@@ -145,20 +183,48 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     final bytes = image.planes.first.bytes;
-    if (bytes.isEmpty || bytes.length > 1_048_576) return;
+    if (bytes.isEmpty) return;
     _lastVisionRequest = now;
     _visionBusy = true;
-    unawaited(_requestRemoteVision(Uint8List.fromList(bytes)));
+    unawaited(
+      _requestRemoteVision(
+        Uint8List.fromList(bytes),
+        width: image.width,
+        height: image.height,
+        rotationDegrees: _camera?.description.sensorOrientation ?? 0,
+        sessionId: sessionId,
+      ),
+    );
   }
 
-  Future<void> _requestRemoteVision(Uint8List bytes) async {
+  Future<void> _requestRemoteVision(
+    Uint8List nv21Bytes, {
+    required int width,
+    required int height,
+    required int rotationDegrees,
+    required int sessionId,
+  }) async {
     try {
-      final result = await _vision.analyzeJpeg(bytes);
-      if (result != null && !_stopped) _announce(result.spokenText);
+      final jpegBytes = await Isolate.run(
+        () => encodeNv21ToJpeg(
+          nv21Bytes,
+          width: width,
+          height: height,
+          rotationDegrees: rotationDegrees,
+        ),
+      );
+      if (jpegBytes.length > 1_048_576) return;
+      final result = await _vision.analyzeJpeg(
+        jpegBytes,
+        languageTag: copy.languageTag,
+      );
+      if (result != null && !_stopped && sessionId == _sessionId) {
+        _announce(result.spokenText);
+      }
     } catch (_) {
       // Local ML Kit remains active when the backend is unavailable.
     } finally {
-      _visionBusy = false;
+      if (sessionId == _sessionId) _visionBusy = false;
     }
   }
 
@@ -186,16 +252,33 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
 
   void _announce(String value) {
     message = value;
-    notifyListeners();
+    _notifyIfMounted();
     if (_speechCooldown?.isActive ?? false) return;
-    _tts.setLanguage('id-ID');
+    _tts.setLanguage(copy.languageTag);
     _tts.speak(value);
     _speechCooldown = Timer(const Duration(seconds: 4), () {});
   }
 
+  Future<void> announceGuideActive(String value) async {
+    _announce(value);
+  }
+
   Future<void> stop() async {
+    _pausedByLifecycle = false;
+    await _stopCamera(removeLifecycleObserver: true);
+    message = copy.stopped;
+    _notifyIfMounted();
+  }
+
+  Future<void> _stopCamera({required bool removeLifecycleObserver}) async {
+    _sessionId += 1;
     _stopped = true;
-    WidgetsBinding.instance.removeObserver(this);
+    _busy = false;
+    _visionBusy = false;
+    if (removeLifecycleObserver && _observingLifecycle) {
+      WidgetsBinding.instance.removeObserver(this);
+      _observingLifecycle = false;
+    }
     _speechCooldown?.cancel();
     final camera = _camera;
     if (camera?.value.isStreamingImages ?? false) {
@@ -205,19 +288,38 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
     await camera?.dispose();
     _camera = null;
     state = CameraGuideState.stopped;
-    notifyListeners();
+    _notifyIfMounted();
+  }
+
+  void _notifyIfMounted() {
+    if (!_disposed) notifyListeners();
+  }
+
+  Future<void> _resumeAfterLifecyclePause() async {
+    await _lifecyclePause;
+    if (_pausedByLifecycle) return;
+    await restart();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      unawaited(stop());
+    if (this.state == CameraGuideState.active &&
+        (state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive)) {
+      _pausedByLifecycle = true;
+      _lifecyclePause = _stopCamera(removeLifecycleObserver: false);
+      unawaited(_lifecyclePause);
+      return;
+    }
+    if (state == AppLifecycleState.resumed && _pausedByLifecycle) {
+      _pausedByLifecycle = false;
+      unawaited(_resumeAfterLifecyclePause());
     }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     unawaited(stop());
     _tts.stop();
     _vision.close();

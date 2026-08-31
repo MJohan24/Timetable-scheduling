@@ -3,6 +3,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/map_widgets.dart';
 import '../../../../shared/widgets/schematic_map_painter.dart';
 import '../../domain/entities/route_plan.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class RouteMapPreviewPage extends StatefulWidget {
   const RouteMapPreviewPage({super.key, required this.route});
@@ -20,9 +21,10 @@ class _RouteMapPreviewPageState extends State<RouteMapPreviewPage> {
   Widget build(BuildContext context) {
     final route = widget.route;
     if (route == null || route.lineSlugs.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return Scaffold(
-        appBar: AppBar(title: const Text('Preview Perjalanan')),
-        body: const Center(child: Text('Preview line tidak tersedia.')),
+        appBar: AppBar(title: Text(l10n.routePreviewTitle)),
+        body: Center(child: Text(l10n.routePreviewUnavailable)),
       );
     }
 
@@ -93,8 +95,8 @@ Set<String> routeMapSegmentIds(RoutePlan route) {
         segments.add(
           mapRouteSegmentKey(
             line.id,
-            orderedStations[edge].name,
-            orderedStations[edge + 1].name,
+            mapSegmentNodeIdentity(orderedStations[edge]),
+            mapSegmentNodeIdentity(orderedStations[edge + 1]),
           ),
         );
       }
@@ -129,7 +131,7 @@ class _PreviewHeader extends StatelessWidget {
     child: Row(
       children: [
         IconButton(
-          tooltip: 'Kembali ke hasil perjalanan',
+          tooltip: AppLocalizations.of(context)!.routeBackToResults,
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
@@ -137,12 +139,15 @@ class _PreviewHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Preview Line Perjalanan',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              Text(
+                AppLocalizations.of(context)!.routePreviewLineTitle,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Text(
-                '${route.from}  →  ${route.to}',
+                AppLocalizations.of(context)!.routeFromTo(route.from, route.to),
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 16,
@@ -189,13 +194,17 @@ class _PreviewControls extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'You Are Here: ${route.from}',
+                AppLocalizations.of(context)!.routeCurrentLocation(route.from),
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
             TextButton(
               onPressed: showAllLines ? onFocusJourney : onShowAllLines,
-              child: Text(showAllLines ? 'Fokus Perjalanan' : 'Semua Line'),
+              child: Text(
+                showAllLines
+                    ? AppLocalizations.of(context)!.routeFocusJourney
+                    : AppLocalizations.of(context)!.routeAllLines,
+              ),
             ),
           ],
         ),
@@ -212,9 +221,9 @@ class _PreviewControls extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Line lain diredupkan agar rute perjalanan lebih mudah dilihat.',
-          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+        Text(
+          AppLocalizations.of(context)!.routeDimmedLinesNote,
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
       ],
     ),

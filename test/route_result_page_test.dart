@@ -8,6 +8,7 @@ import 'package:timetable/features/route_result/domain/services/route_speech_ser
 import 'package:timetable/features/route_result/presentation/controllers/route_controller.dart';
 import 'package:timetable/features/route_result/presentation/pages/route_result_page.dart';
 import 'package:timetable/features/route_result/presentation/pages/route_map_preview_page.dart';
+import 'package:timetable/features/home/presentation/widgets/map_widgets.dart';
 import 'package:timetable/l10n/app_localizations.dart';
 import 'package:timetable/shared/widgets/schematic_map_painter.dart';
 import 'helpers/route_test_data.dart';
@@ -44,6 +45,42 @@ Widget _page(RouteController controller) => MaterialApp(
   ],
   supportedLocales: AppLocalizations.supportedLocales,
   home: RouteResultPage(controller: controller, from: 'bogor', to: 'tangerang'),
+);
+
+const _lrtCibubur = RouteLine(
+  id: 'line-lrt-cibubur',
+  slug: 'lrt_cibubur',
+  name: 'LRT Jabodebek (Cibubur)',
+  color: '#003399',
+  serviceType: 'LRT',
+);
+
+const _krlBogor = RouteLine(
+  id: 'line-bogor',
+  slug: 'bogor',
+  name: 'KRL Lin Bogor',
+  color: '#E53935',
+  serviceType: 'KRL',
+);
+
+RoutePlan _route(List<RouteStation> stations) => RoutePlan(
+  from: stations.first.name,
+  to: stations.last.name,
+  travelTime: 20,
+  fare: 4000,
+  unitFare: 4000,
+  currency: 'IDR',
+  passengerCount: 1,
+  stops: stations.length,
+  serviceInfo: 'Layanan normal',
+  hasTransit: stations.map((station) => station.line.slug).toSet().length > 1,
+  transferCount:
+      stations.map((station) => station.line.slug).toSet().length - 1,
+  preference: RoutePreference.fastest,
+  steps: const [],
+  stationSequence: stations,
+  exitGateA: 'Pintu utama',
+  exitGateB: 'Area antar-jemput',
 );
 
 void main() {
@@ -146,15 +183,112 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Preview Line Perjalanan'), findsOneWidget);
-    expect(find.text('You Are Here: Bogor'), findsOneWidget);
+    expect(find.text('Pratinjau Line Perjalanan'), findsOneWidget);
+    expect(find.text('Anda Di Sini: Bogor'), findsOneWidget);
     expect(find.text('Lin Bogor'), findsOneWidget);
     expect(find.text('Lin Tangerang'), findsOneWidget);
     expect(find.text('Semua Line'), findsOneWidget);
 
+    MapView map = tester.widget(find.byType(MapView));
+    expect(map.highlightedSegmentIds, isNotNull);
+
     await tester.tap(find.text('Semua Line'));
     await tester.pump();
     expect(find.text('Fokus Perjalanan'), findsOneWidget);
+    map = tester.widget(find.byType(MapView));
+    expect(map.highlightedSegmentIds, isNull);
+
+    await tester.tap(find.text('Fokus Perjalanan'));
+    await tester.pump();
+    expect(find.text('Semua Line'), findsOneWidget);
+    map = tester.widget(find.byType(MapView));
+    expect(map.highlightedSegmentIds, isNotNull);
+  });
+
+  test('Dukuh Atas to Cikoko highlights only the travelled LRT edges', () {
+    final route = _route(const [
+      RouteStation(
+        stationId: 'dukuh-atas',
+        name: 'Dukuh Atas Bank Syariah Indonesia',
+        nodeCode: 'CB01',
+        line: _lrtCibubur,
+      ),
+      RouteStation(
+        stationId: 'cikoko',
+        name: 'Cikoko',
+        nodeCode: 'CB06',
+        line: _lrtCibubur,
+      ),
+    ]);
+
+    final segments = routeMapSegmentIds(route);
+    expect(segments, hasLength(7));
+    expect(
+      segments.every((segment) => segment.startsWith('lrt_cibubur|')),
+      isTrue,
+    );
+    expect(
+      segments,
+      isNot(contains(mapRouteSegmentKey('lrt_cibubur', 'CB06', 'CB07'))),
+    );
+  });
+
+  test('Dukuh Atas to Tebet skips the Cikoko-Cawang walking transfer', () {
+    final route = _route(const [
+      RouteStation(
+        stationId: 'dukuh-atas',
+        name: 'Dukuh Atas Bank Syariah Indonesia',
+        nodeCode: 'CB01',
+        line: _lrtCibubur,
+      ),
+      RouteStation(
+        stationId: 'cikoko',
+        name: 'Cikoko',
+        nodeCode: 'CB06',
+        line: _lrtCibubur,
+      ),
+      RouteStation(
+        stationId: 'cawang',
+        name: 'Cawang',
+        nodeCode: 'B11',
+        line: _krlBogor,
+      ),
+      RouteStation(
+        stationId: 'tebet',
+        name: 'Tebet',
+        nodeCode: 'B10',
+        line: _krlBogor,
+      ),
+    ]);
+
+    final segments = routeMapSegmentIds(route);
+    expect(segments, hasLength(8));
+    expect(segments, contains(mapRouteSegmentKey('bogor', 'B11', 'B10')));
+    expect(
+      segments,
+      isNot(contains(mapRouteSegmentKey('lrt_cibubur', 'CB06', 'CB07'))),
+    );
+  });
+
+  test('single-line route highlights only its direct edge', () {
+    final route = _route(const [
+      RouteStation(
+        stationId: 'cawang',
+        name: 'Cawang',
+        nodeCode: 'B11',
+        line: _krlBogor,
+      ),
+      RouteStation(
+        stationId: 'tebet',
+        name: 'Tebet',
+        nodeCode: 'B10',
+        line: _krlBogor,
+      ),
+    ]);
+
+    expect(routeMapSegmentIds(route), {
+      mapRouteSegmentKey('bogor', 'B11', 'B10'),
+    });
   });
 
   test('walking transfer does not highlight a rail segment across Cikoko', () {
@@ -215,10 +349,10 @@ void main() {
     );
 
     final segments = routeMapSegmentIds(route);
-    expect(segments, contains(mapRouteSegmentKey('bogor', 'Cawang', 'Tebet')));
+    expect(segments, contains(mapRouteSegmentKey('bogor', 'B11', 'B10')));
     expect(
       segments,
-      isNot(contains(mapRouteSegmentKey('lrt_cibubur', 'Cikoko', 'Cawang'))),
+      isNot(contains(mapRouteSegmentKey('lrt_cibubur', 'CB06', 'CB07'))),
     );
   });
 }

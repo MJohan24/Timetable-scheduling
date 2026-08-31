@@ -54,7 +54,9 @@ class _TrainMapPageState extends State<TrainMapPage> {
           _selectedStation = nearest.station.name;
         });
         if (result.usedLastKnownPosition) {
-          _showLocationMessage('Menggunakan lokasi terakhir perangkat.');
+          _showLocationMessage(
+            AppLocalizations.of(context)!.mapNearestMarkerNote,
+          );
         }
         return;
       }
@@ -64,16 +66,17 @@ class _TrainMapPageState extends State<TrainMapPage> {
     _showLocationMessage(_messageFor(result.status));
   }
 
-  String _messageFor(UserLocationStatus status) => switch (status) {
-    UserLocationStatus.servicesDisabled =>
-      'Aktifkan layanan lokasi perangkat, lalu coba lagi.',
-    UserLocationStatus.permissionDenied =>
-      'Izin lokasi dibutuhkan untuk menemukan stasiun terdekat.',
-    UserLocationStatus.permissionDeniedForever =>
-      'Izin lokasi diblokir. Aktifkan izin lokasi melalui pengaturan aplikasi.',
-    UserLocationStatus.unavailable || UserLocationStatus.success =>
-      'Lokasi belum dapat ditemukan. Coba lagi di area yang lebih terbuka.',
-  };
+  String _messageFor(UserLocationStatus status) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (status) {
+      UserLocationStatus.servicesDisabled => l10n.mapLocationServiceDisabled,
+      UserLocationStatus.permissionDenied => l10n.mapLocationPermissionDenied,
+      UserLocationStatus.permissionDeniedForever =>
+        l10n.mapLocationPermissionDenied,
+      UserLocationStatus.unavailable ||
+      UserLocationStatus.success => l10n.stationLoadError,
+    };
+  }
 
   void _showLocationMessage(String message) {
     ScaffoldMessenger.of(context)
@@ -222,7 +225,7 @@ class _TrainMapPageState extends State<TrainMapPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Anda berada di dekat Stasiun $_nearestStationName',
+                                    l10n.mapNearStation(_nearestStationName!),
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
@@ -230,8 +233,8 @@ class _TrainMapPageState extends State<TrainMapPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text(
-                                    'Penanda biru menunjukkan titik stasiun terdekat, bukan posisi GPS persis di peta skematik.',
+                                  Text(
+                                    l10n.mapNearestMarkerNote,
                                     style: TextStyle(
                                       fontSize: 10.5,
                                       height: 1.35,

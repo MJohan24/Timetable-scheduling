@@ -359,4 +359,3 @@ ALTER TABLE "_LineToStation" ADD CONSTRAINT "_LineToStation_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_LineToStation" ADD CONSTRAINT "_LineToStation_B_fkey" FOREIGN KEY ("B") REFERENCES "Station"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

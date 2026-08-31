@@ -24,7 +24,7 @@ model Station {
   lineInfo     String?
   statusText   String?
   statusColor  String?
-  
+
   lines        Line[]    @relation("LineToStation")
   aliases      StationAlias[]
   nodes        StationNode[]
@@ -105,7 +105,7 @@ model Schedule {
   platform      String
   trainType     String   // 'KRL', 'LRT', 'MRT'
   isWeekend     Boolean  @default(false)
-  
+
   stationId     String
   station       Station  @relation(fields: [stationId], references: [id])
   tickets       Ticket[]
@@ -321,7 +321,7 @@ model Ticket {
   usedAt       DateTime?
   cancelledAt DateTime?
   cancellationReason String?
-  
+
   user         User?        @relation(fields: [userId], references: [id])
   schedule     Schedule?    @relation(fields: [scheduleId], references: [id])
   originStation Station     @relation("TicketOrigin", fields: [originStationId], references: [id])
@@ -344,7 +344,7 @@ model Payment {
   paymentMethod  String?
   amount         Int
   status         PaymentStatus @default(PENDING)
-  
+
   ticket         Ticket   @relation(fields: [ticketId], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -368,7 +368,7 @@ model Reminder {
   scheduleId String
   timeBefore Int      // minutes before departure
   isActive   Boolean  @default(true)
-  
+
   user       User     @relation(fields: [userId], references: [id])
   schedule   Schedule @relation(fields: [scheduleId], references: [id])
   createdAt  DateTime @default(now())
@@ -381,7 +381,7 @@ model Report {
   category    String
   description String
   status      String   @default("OPEN")
-  
+
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

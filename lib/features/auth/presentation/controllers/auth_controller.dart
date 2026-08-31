@@ -28,13 +28,19 @@ class AuthController extends ChangeNotifier {
       _status == AuthStatus.restoring || _status == AuthStatus.submitting;
 
   Future<void> bootstrap() async {
-    final result = await _repository.bootstrap();
-    _user = result.user;
-    _status = result.isAuthenticated
-        ? (result.offline
-              ? AuthStatus.offlineAuthenticated
-              : AuthStatus.authenticated)
-        : AuthStatus.guest;
+    try {
+      final result = await _repository.bootstrap();
+      _user = result.user;
+      _status = result.isAuthenticated
+          ? (result.offline
+                ? AuthStatus.offlineAuthenticated
+                : AuthStatus.authenticated)
+          : AuthStatus.guest;
+    } on Object {
+      _user = null;
+      _errorCode = 'AUTH_RESTORE_FAILED';
+      _status = AuthStatus.guest;
+    }
     notifyListeners();
   }
 

@@ -1,3 +1,4 @@
+import '../../../../core/network/access_token_provider.dart';
 import '../../domain/entities/account_user.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -6,7 +7,7 @@ import '../datasources/auth_secure_store.dart';
 import '../models/account_user_model.dart';
 import '../models/auth_session_model.dart';
 
-class AuthRepositoryImpl implements AuthRepository {
+class AuthRepositoryImpl implements AuthRepository, AccessTokenProvider {
   AuthRepositoryImpl({AuthRemoteDataSource? remote, AuthSessionStore? store})
     : _remote = remote ?? AuthRemoteDataSource(),
       _store = store ?? AuthSecureStore();
@@ -19,6 +20,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   AccountUser? get currentUser => _session?.user ?? _cachedUser;
+
+  @override
+  Future<String?> getAccessToken({bool forceRefresh = false}) async {
+    if (!forceRefresh && _session != null) return _session!.accessToken;
+    final refreshToken = await _store.readRefreshToken();
+    if (refreshToken == null) return null;
+    return (await _refreshOnce()).accessToken;
+  }
 
   @override
   Future<AuthBootstrapResult> bootstrap() async {

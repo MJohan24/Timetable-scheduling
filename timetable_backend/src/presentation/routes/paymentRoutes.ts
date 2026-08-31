@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { checkout, getPaymentStatus, xenditWebhook } from '../controllers/paymentController';
+import { optionalAuth } from '../middlewares/authMiddleware';
 
 const router = Router();
 
@@ -22,8 +23,8 @@ const router = Router();
  *       200:
  *         description: Payment invoice created
  */
-router.post('/checkout', checkout);
-router.get('/status/:ticketId', getPaymentStatus);
+router.post('/checkout', optionalAuth, checkout);
+router.get('/status/:ticketId', optionalAuth, getPaymentStatus);
 
 /**
  * @swagger

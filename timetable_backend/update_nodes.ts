@@ -9,7 +9,7 @@ async function main() {
 
   const regex = /StationData\([^)]*name:\s*'([^']*)'[^)]*code:\s*'([^']*)'/g;
   let match;
-  
+
   const updates: { name: string; nodeCode: string }[] = [];
 
   while ((match = regex.exec(content)) !== null) {
@@ -23,13 +23,13 @@ async function main() {
   console.log(`Found ${updates.length} stations with node codes in dart file.`);
 
   const allStations = await prisma.station.findMany();
-  
+
   let updatedCount = 0;
   for (const update of updates) {
     // try to match by name (ignore case and spaces)
     const normalize = (s: string) => s.toLowerCase().replace(/[\s-]/g, '');
     const normalizedName = normalize(update.name);
-    
+
     const dbStation = allStations.find(s => normalize(s.name) === normalizedName);
     if (dbStation) {
       await prisma.station.update({

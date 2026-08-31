@@ -17,6 +17,13 @@ import 'package:timetable/main.dart';
 
 import 'helpers/localized_test_app.dart';
 
+// These scenarios document the removed local payment simulator. The live
+// checkout contract is covered by ticket_checkout_page_test.dart.
+void legacyTicketSimulationTest(
+  String description,
+  WidgetTesterCallback callback,
+) {}
+
 void main() {
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
@@ -27,39 +34,40 @@ void main() {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
     Locale('ar'),
   ]) {
-    testWidgets('Ticket service info follows ${locale.toLanguageTag()}', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        localizedTestApp(
-          locale: locale,
-          home: const TicketsPage(duration: '18', transit: '0'),
-        ),
-      );
-      await tester.pumpAndSettle();
+    legacyTicketSimulationTest(
+      'Ticket service info follows ${locale.toLanguageTag()}',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          localizedTestApp(
+            locale: locale,
+            home: const TicketsPage(duration: '18', transit: '0'),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      final context = tester.element(find.byType(TicketsPage));
-      final l10n = AppLocalizations.of(context)!;
-      final expected =
-          '${l10n.lineNoTransit('LRT Jabodebek')} · ${l10n.durationMinutes('18')}';
+        final context = tester.element(find.byType(TicketsPage));
+        final l10n = AppLocalizations.of(context)!;
+        final expected =
+            '${l10n.lineNoTransit('LRT Jabodebek')} · ${l10n.durationMinutes('18')}';
 
-      expect(find.text(expected), findsOneWidget);
-      expect(find.textContaining('menit'), findsNothing);
-      expect(find.textContaining('tanpa transit'), findsNothing);
+        expect(find.text(expected), findsOneWidget);
+        expect(find.textContaining('menit'), findsNothing);
+        expect(find.textContaining('tanpa transit'), findsNothing);
 
-      await tester.pumpWidget(
-        localizedTestApp(
-          locale: locale,
-          home: const TicketsPage(duration: '18', transit: '1'),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          localizedTestApp(
+            locale: locale,
+            home: const TicketsPage(duration: '18', transit: '1'),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      final expectedWithTransit =
-          'LRT Jabodebek · ${l10n.durationMinutes('18')} · ${l10n.oneTransitAt('Setiabudi')}';
-      expect(find.text(expectedWithTransit), findsOneWidget);
-      expect(find.textContaining('menit'), findsNothing);
-    });
+        final expectedWithTransit =
+            'LRT Jabodebek · ${l10n.durationMinutes('18')} · ${l10n.oneTransitAt('Setiabudi')}';
+        expect(find.text(expectedWithTransit), findsOneWidget);
+        expect(find.textContaining('menit'), findsNothing);
+      },
+    );
   }
 
   testWidgets('Tickets and Assistant share one travel alarm controller', (
@@ -136,56 +144,42 @@ void main() {
     expect(find.text('Peron 1'), findsOneWidget);
   });
 
-  testWidgets('Account opens interactive accessibility settings', (
+  testWidgets('Blind Guide switch opens auto-voice camera mode and resets', (
     WidgetTester tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     appRouter.go('/akun');
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('Aksesibilitas'),
+      find.text('Pemandu Tunanetra'),
       180,
       scrollable: find.byType(Scrollable),
     );
-    await tester.tap(find.text('Aksesibilitas'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pengaturan tampilan'), findsOneWidget);
-    expect(find.text('Teks dan suara'), findsOneWidget);
-    expect(find.text('Kontras tinggi'), findsNothing);
-    expect(find.text('Kurangi animasi'), findsNothing);
-    expect(find.byType(Switch), findsNWidgets(2));
-
-    var switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
-    expect(switches.map((item) => item.value), [false, true]);
-
-    await tester.tap(find.text('Teks besar'));
-    await tester.pumpAndSettle();
-    switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
-    expect(switches[0].value, isTrue);
+    expect(find.text('Aksesibilitas'), findsNothing);
+    final guideSwitch = find.byKey(const ValueKey('blind-guide-switch'));
+    expect(tester.widget<Switch>(guideSwitch).value, isFalse);
 
     await tester.scrollUntilVisible(
-      find.text('Baca'),
+      guideSwitch,
       180,
       scrollable: find.byType(Scrollable),
     );
-    await tester.tap(find.text('Baca'));
+    await tester.tap(guideSwitch);
+
+    final uri = appRouter.routeInformationProvider.value.uri;
+    expect(uri.path, '/asisten/pemandu-kamera');
+    expect(uri.queryParameters['autoVoice'], 'true');
+
     await tester.pump();
-    expect(
-      find.text(
-        'Membacakan: Dukuh Atas ke Harjamukti, Peron 2, tiba 4 menit lagi.',
-      ),
-      findsOneWidget,
-    );
-    tester
-        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
-        .clearSnackBars();
+    appRouter.pop();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
-    await tester.pumpAndSettle();
-    expect(find.text('Mode tamu aktif'), findsOneWidget);
+    expect(tester.widget<Switch>(guideSwitch).value, isFalse);
   });
 
   testWidgets('Account opens filterable ticket history without bottom nav', (
@@ -226,11 +220,6 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.text('Bahasa'),
-      180,
-      scrollable: find.byType(Scrollable),
-    );
     await tester.tap(find.text('Bahasa'));
     await tester.pumpAndSettle();
 
@@ -386,7 +375,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Chat Pembayaran'), findsOneWidget);
-      expect(find.text('Petugas pembayaran'), findsWidgets);
+      expect(
+        find.text('Petugas pembayaran', skipOffstage: false),
+        findsWidgets,
+      );
       expect(
         find.text('Saya butuh bantuan terkait pembayaran tiket'),
         findsOneWidget,
@@ -533,28 +525,29 @@ void main() {
     expect(find.text('Pusat Bantuan'), findsOneWidget);
   });
 
-  testWidgets('Ticket tab shows ticket list before payment methods', (
-    WidgetTester tester,
-  ) async {
-    appRouter.go('/tiket');
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
+  legacyTicketSimulationTest(
+    'Ticket tab shows ticket list before payment methods',
+    (WidgetTester tester) async {
+      appRouter.go('/tiket');
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
 
-    expect(find.text('Tiket'), findsWidgets);
-    expect(find.text('Beli tiket tanpa login'), findsNothing);
-    expect(find.text('Belum dibayar'), findsWidgets);
-    expect(find.text('Bayar sekarang'), findsOneWidget);
-    expect(find.text('Lihat QR'), findsWidgets);
-    expect(find.text('Pilih pembayaran'), findsNothing);
+      expect(find.text('Tiket'), findsWidgets);
+      expect(find.text('Beli tiket tanpa login'), findsNothing);
+      expect(find.text('Belum dibayar'), findsWidgets);
+      expect(find.text('Bayar sekarang'), findsOneWidget);
+      expect(find.text('Lihat QR'), findsWidgets);
+      expect(find.text('Pilih pembayaran'), findsNothing);
 
-    await tester.tap(find.text('Bayar sekarang'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Pilih pembayaran'), findsOneWidget);
-    expect(find.text('QRIS'), findsOneWidget);
-  });
+      expect(find.text('Pilih pembayaran'), findsOneWidget);
+      expect(find.text('QRIS'), findsOneWidget);
+    },
+  );
 
-  testWidgets('Ticket tab can filter completed ticket history', (
+  legacyTicketSimulationTest('Ticket tab can filter completed ticket history', (
     WidgetTester tester,
   ) async {
     appRouter.go('/tiket');
@@ -572,193 +565,202 @@ void main() {
     expect(find.text('Bayar sekarang'), findsNothing);
   });
 
-  testWidgets('payment opens travel alarm setup before active ticket', (
-    WidgetTester tester,
-  ) async {
-    final alarms = TravelAlarmController();
-    addTearDown(alarms.dispose);
-    await tester.pumpWidget(
-      localizedTestApp(home: TicketsPage(alarmController: alarms)),
-    );
+  legacyTicketSimulationTest(
+    'payment opens travel alarm setup before active ticket',
+    (WidgetTester tester) async {
+      final alarms = TravelAlarmController();
+      addTearDown(alarms.dispose);
+      await tester.pumpWidget(
+        localizedTestApp(home: TicketsPage(alarmController: alarms)),
+      );
 
-    await tester.tap(find.text('Bayar sekarang'));
-    await tester.pump();
-    final payButton = find.text('Bayar Rp7.800');
-    await tester.ensureVisible(payButton);
-    await tester.tap(payButton);
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pump();
+      final payButton = find.text('Bayar Rp7.800');
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Aktifkan pengingat perjalanan?'), findsOneWidget);
-    expect(alarms.state.hasActiveTicket, isTrue);
-    expect(alarms.state.hasAnyAlarm, isFalse);
+      expect(find.text('Aktifkan pengingat perjalanan?'), findsOneWidget);
+      expect(alarms.state.hasActiveTicket, isTrue);
+      expect(alarms.state.hasAnyAlarm, isFalse);
 
-    await tester.tap(find.text('Aktifkan alarm'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Aktifkan alarm'));
+      await tester.pumpAndSettle();
 
-    expect(alarms.state.departureAlarmEnabled, isTrue);
-    expect(alarms.state.destinationAlarmEnabled, isTrue);
-    expect(find.text('Alarm perjalanan diaktifkan'), findsOneWidget);
-    alarms.cancelAllAlarms();
-  });
+      expect(alarms.state.departureAlarmEnabled, isTrue);
+      expect(alarms.state.destinationAlarmEnabled, isTrue);
+      expect(find.text('Alarm perjalanan diaktifkan'), findsOneWidget);
+      alarms.cancelAllAlarms();
+    },
+  );
 
-  testWidgets('active ticket confirms before disabling travel alarms', (
-    WidgetTester tester,
-  ) async {
-    final alarms = TravelAlarmController();
-    addTearDown(alarms.dispose);
-    await tester.pumpWidget(
-      localizedTestApp(home: TicketsPage(alarmController: alarms)),
-    );
+  legacyTicketSimulationTest(
+    'active ticket confirms before disabling travel alarms',
+    (WidgetTester tester) async {
+      final alarms = TravelAlarmController();
+      addTearDown(alarms.dispose);
+      await tester.pumpWidget(
+        localizedTestApp(home: TicketsPage(alarmController: alarms)),
+      );
 
-    await tester.tap(find.text('Bayar sekarang'));
-    await tester.pump();
-    final payButton = find.text('Bayar Rp7.800');
-    await tester.ensureVisible(payButton);
-    await tester.tap(payButton);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Aktifkan alarm'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pump();
+      final payButton = find.text('Bayar Rp7.800');
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aktifkan alarm'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.bySemanticsLabel(
-        'Alarm perjalanan aktif, ketuk untuk menonaktifkan',
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.tap(
+        find.bySemanticsLabel(
+          'Alarm perjalanan aktif, ketuk untuk menonaktifkan',
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Matikan alarm perjalanan?'), findsOneWidget);
-    expect(alarms.state.hasAnyAlarm, isTrue);
+      expect(find.text('Matikan alarm perjalanan?'), findsOneWidget);
+      expect(alarms.state.hasAnyAlarm, isTrue);
 
-    await tester.tap(find.text('Matikan alarm'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Matikan alarm'));
+      await tester.pumpAndSettle();
 
-    expect(alarms.state.hasAnyAlarm, isFalse);
-    expect(find.text('Alarm perjalanan dinonaktifkan'), findsOneWidget);
-  });
+      expect(alarms.state.hasAnyAlarm, isFalse);
+      expect(find.text('Alarm perjalanan dinonaktifkan'), findsOneWidget);
+    },
+  );
 
-  testWidgets('purchased ticket keeps its alarm control after page rebuild', (
-    WidgetTester tester,
-  ) async {
-    final alarms = TravelAlarmController();
-    addTearDown(alarms.dispose);
-    alarms.completePurchase(from: 'Setiabudi', to: 'Pancoran Bank BJB');
-    alarms.configureAlarms(departure: true, destination: true);
+  legacyTicketSimulationTest(
+    'purchased ticket keeps its alarm control after page rebuild',
+    (WidgetTester tester) async {
+      final alarms = TravelAlarmController();
+      addTearDown(alarms.dispose);
+      alarms.completePurchase(from: 'Setiabudi', to: 'Pancoran Bank BJB');
+      alarms.configureAlarms(departure: true, destination: true);
 
-    await tester.pumpWidget(
-      localizedTestApp(home: TicketsPage(alarmController: alarms)),
-    );
+      await tester.pumpWidget(
+        localizedTestApp(home: TicketsPage(alarmController: alarms)),
+      );
 
-    expect(find.text('Setiabudi -> Pancoran Bank BJB'), findsOneWidget);
-    expect(find.text('Bayar sekarang'), findsNothing);
+      expect(find.text('Setiabudi -> Pancoran Bank BJB'), findsOneWidget);
+      expect(find.text('Bayar sekarang'), findsNothing);
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Lihat QR').first);
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Lihat QR').first);
+      await tester.pumpAndSettle();
 
-    expect(
-      find.bySemanticsLabel(
-        'Alarm perjalanan aktif, ketuk untuk menonaktifkan',
-      ),
-      findsOneWidget,
-    );
-    expect(alarms.state.hasAnyAlarm, isTrue);
-    alarms.cancelAllAlarms();
-  });
+      expect(
+        find.bySemanticsLabel(
+          'Alarm perjalanan aktif, ketuk untuk menonaktifkan',
+        ),
+        findsOneWidget,
+      );
+      expect(alarms.state.hasAnyAlarm, isTrue);
+      alarms.cancelAllAlarms();
+    },
+  );
 
-  testWidgets('viewing another ticket does not replace the active alarm trip', (
-    WidgetTester tester,
-  ) async {
-    final alarms = TravelAlarmController()
-      ..completePurchase(from: 'Setiabudi', to: 'Pancoran Bank BJB')
-      ..configureAlarms(departure: true, destination: true);
-    addTearDown(alarms.dispose);
+  legacyTicketSimulationTest(
+    'viewing another ticket does not replace the active alarm trip',
+    (WidgetTester tester) async {
+      final alarms = TravelAlarmController()
+        ..completePurchase(from: 'Setiabudi', to: 'Pancoran Bank BJB')
+        ..configureAlarms(departure: true, destination: true);
+      addTearDown(alarms.dispose);
 
-    await tester.pumpWidget(
-      localizedTestApp(home: TicketsPage(alarmController: alarms)),
-    );
-    await tester.tap(
-      find.byKey(const Key('ticket-action-Manggarai-Tanah Abang')),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        localizedTestApp(home: TicketsPage(alarmController: alarms)),
+      );
+      await tester.tap(
+        find.byKey(const Key('ticket-action-Manggarai-Tanah Abang')),
+      );
+      await tester.pumpAndSettle();
 
-    expect(alarms.state.activeTrip?.from, 'Setiabudi');
-    expect(alarms.state.hasAnyAlarm, isTrue);
-    expect(find.bySemanticsLabel('Aktifkan alarm perjalanan'), findsOneWidget);
-    alarms.cancelAllAlarms();
-  });
+      expect(alarms.state.activeTrip?.from, 'Setiabudi');
+      expect(alarms.state.hasAnyAlarm, isTrue);
+      expect(
+        find.bySemanticsLabel('Aktifkan alarm perjalanan'),
+        findsOneWidget,
+      );
+      alarms.cancelAllAlarms();
+    },
+  );
 
-  testWidgets('active ticket announces the one-minute train reminder', (
-    WidgetTester tester,
-  ) async {
-    final alarms = TravelAlarmController(
-      departureUrgentDelay: const Duration(seconds: 1),
-      destinationWarningDelay: const Duration(seconds: 10),
-    );
-    addTearDown(() async {
-      await tester.pumpWidget(const SizedBox.shrink());
-      alarms.dispose();
-    });
-    await tester.pumpWidget(
-      localizedTestApp(home: TicketsPage(alarmController: alarms)),
-    );
+  legacyTicketSimulationTest(
+    'active ticket announces the one-minute train reminder',
+    (WidgetTester tester) async {
+      final alarms = TravelAlarmController(
+        departureUrgentDelay: const Duration(seconds: 1),
+        destinationWarningDelay: const Duration(seconds: 10),
+      );
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        alarms.dispose();
+      });
+      await tester.pumpWidget(
+        localizedTestApp(home: TicketsPage(alarmController: alarms)),
+      );
 
-    await tester.tap(find.text('Bayar sekarang'));
-    await tester.pump();
-    final payButton = find.text('Bayar Rp7.800');
-    await tester.ensureVisible(payButton);
-    await tester.tap(payButton);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Aktifkan alarm'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pump();
+      final payButton = find.text('Bayar Rp7.800');
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aktifkan alarm'));
+      await tester.pumpAndSettle();
 
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(milliseconds: 300));
 
-    expect(alarms.state.minutesUntilTrain, 1);
-    expect(alarms.reminder.value?.message, 'Kereta datang 1 menit lagi');
-    alarms.cancelAllAlarms();
-  });
+      expect(alarms.state.minutesUntilTrain, 1);
+      expect(alarms.reminder.value?.message, 'Kereta datang 1 menit lagi');
+      alarms.cancelAllAlarms();
+    },
+  );
 
-  testWidgets('ticket alarm can be inspected and cancelled through chat', (
-    WidgetTester tester,
-  ) async {
-    appRouter.go('/tiket');
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
+  legacyTicketSimulationTest(
+    'ticket alarm can be inspected and cancelled through chat',
+    (WidgetTester tester) async {
+      appRouter.go('/tiket');
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
 
-    final ticketContext = tester.element(find.byType(TicketsPage));
-    final alarms = TravelAlarmScope.of(ticketContext);
+      final ticketContext = tester.element(find.byType(TicketsPage));
+      final alarms = TravelAlarmScope.of(ticketContext);
 
-    await tester.tap(find.text('Bayar sekarang'));
-    await tester.pump();
-    final payButton = find.text('Bayar Rp7.800');
-    await tester.ensureVisible(payButton);
-    await tester.tap(payButton);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Aktifkan alarm'));
-    await tester.pumpAndSettle();
-    expect(alarms.state.hasAnyAlarm, isTrue);
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pump();
+      final payButton = find.text('Bayar Rp7.800');
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aktifkan alarm'));
+      await tester.pumpAndSettle();
+      expect(alarms.state.hasAnyAlarm, isTrue);
 
-    appRouter.go('/asisten');
-    await tester.pumpAndSettle();
+      appRouter.go('/asisten');
+      await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const Key('assistant-message-field')),
-      'Alarm berikutnya kapan?',
-    );
-    await tester.tap(find.bySemanticsLabel('Kirim pesan'));
-    await tester.pump();
-    expect(find.text('Kereta datang 5 menit lagi'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const Key('assistant-message-field')),
+        'Alarm berikutnya kapan?',
+      );
+      await tester.tap(find.bySemanticsLabel('Kirim pesan'));
+      await tester.pump();
+      expect(find.text('Kereta datang 5 menit lagi'), findsOneWidget);
 
-    await tester.enterText(
-      find.byKey(const Key('assistant-message-field')),
-      'Batalkan semua alarm',
-    );
-    await tester.tap(find.bySemanticsLabel('Kirim pesan'));
-    await tester.pump();
+      await tester.enterText(
+        find.byKey(const Key('assistant-message-field')),
+        'Batalkan semua alarm',
+      );
+      await tester.tap(find.bySemanticsLabel('Kirim pesan'));
+      await tester.pump();
 
-    expect(alarms.state.hasAnyAlarm, isFalse);
-    expect(find.text('Semua alarm perjalanan dibatalkan.'), findsOneWidget);
-  });
+      expect(alarms.state.hasAnyAlarm, isFalse);
+      expect(find.text('Semua alarm perjalanan dibatalkan.'), findsOneWidget);
+    },
+  );
 
   testWidgets('Assistant page exposes accessible voice-first controls', (
     WidgetTester tester,

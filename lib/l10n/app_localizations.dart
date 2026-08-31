@@ -271,6 +271,156 @@ abstract class AppLocalizations {
   /// **'Teks besar dan bacakan rute'**
   String get profileLargeText;
 
+  /// No description provided for @profileBlindGuide.
+  ///
+  /// In id, this message translates to:
+  /// **'Pemandu Tunanetra'**
+  String get profileBlindGuide;
+
+  /// No description provided for @profileBlindGuideDescription.
+  ///
+  /// In id, this message translates to:
+  /// **'Buka kamera dengan panduan suara otomatis'**
+  String get profileBlindGuideDescription;
+
+  /// No description provided for @cameraGuideActiveAnnouncement.
+  ///
+  /// In id, this message translates to:
+  /// **'Pemandu kamera aktif. Arahkan kamera ke depan.'**
+  String get cameraGuideActiveAnnouncement;
+
+  /// No description provided for @cameraGuideTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Pemandu Kamera'**
+  String get cameraGuideTitle;
+
+  /// No description provided for @cameraGuideBack.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali'**
+  String get cameraGuideBack;
+
+  /// No description provided for @cameraGuideStatus.
+  ///
+  /// In id, this message translates to:
+  /// **'Status kamera: {status}'**
+  String cameraGuideStatus(String status);
+
+  /// No description provided for @cameraGuideStateLoading.
+  ///
+  /// In id, this message translates to:
+  /// **'Memuat'**
+  String get cameraGuideStateLoading;
+
+  /// No description provided for @cameraGuideStateActive.
+  ///
+  /// In id, this message translates to:
+  /// **'Aktif'**
+  String get cameraGuideStateActive;
+
+  /// No description provided for @cameraGuideStatePermissionDenied.
+  ///
+  /// In id, this message translates to:
+  /// **'Izin diperlukan'**
+  String get cameraGuideStatePermissionDenied;
+
+  /// No description provided for @cameraGuideStateOffline.
+  ///
+  /// In id, this message translates to:
+  /// **'Offline'**
+  String get cameraGuideStateOffline;
+
+  /// No description provided for @cameraGuideStateError.
+  ///
+  /// In id, this message translates to:
+  /// **'Kesalahan'**
+  String get cameraGuideStateError;
+
+  /// No description provided for @cameraGuideStateStopped.
+  ///
+  /// In id, this message translates to:
+  /// **'Dihentikan'**
+  String get cameraGuideStateStopped;
+
+  /// No description provided for @cameraGuidePermissionRequired.
+  ///
+  /// In id, this message translates to:
+  /// **'Izin kamera diperlukan. Aktifkan dari Pengaturan jika sebelumnya ditolak permanen.'**
+  String get cameraGuidePermissionRequired;
+
+  /// No description provided for @cameraGuideSafetyWarning.
+  ///
+  /// In id, this message translates to:
+  /// **'Deteksi dapat keliru. Gunakan tongkat, pendamping, atau bantuan petugas.'**
+  String get cameraGuideSafetyWarning;
+
+  /// No description provided for @cameraGuideRetry.
+  ///
+  /// In id, this message translates to:
+  /// **'Coba Lagi'**
+  String get cameraGuideRetry;
+
+  /// No description provided for @cameraGuideStart.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai Pemandu'**
+  String get cameraGuideStart;
+
+  /// No description provided for @cameraGuideStop.
+  ///
+  /// In id, this message translates to:
+  /// **'Hentikan Pemandu'**
+  String get cameraGuideStop;
+
+  /// No description provided for @cameraGuideLoadingMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Menyiapkan kamera…'**
+  String get cameraGuideLoadingMessage;
+
+  /// No description provided for @cameraGuideActiveMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Arahkan kamera ke depan. Pemandu aktif.'**
+  String get cameraGuideActiveMessage;
+
+  /// No description provided for @cameraGuideUnavailableMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Kamera tidak dapat digunakan.'**
+  String get cameraGuideUnavailableMessage;
+
+  /// No description provided for @cameraGuideOfflineMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Deteksi lokal terbatas; koneksi AI tidak tersedia.'**
+  String get cameraGuideOfflineMessage;
+
+  /// No description provided for @cameraGuideStoppedMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Pemandu kamera dihentikan.'**
+  String get cameraGuideStoppedMessage;
+
+  /// No description provided for @cameraGuideNoClearObject.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada objek jelas di depan.'**
+  String get cameraGuideNoClearObject;
+
+  /// No description provided for @cameraGuideObjectCount.
+  ///
+  /// In id, this message translates to:
+  /// **'{count} objek terdeteksi di depan.'**
+  String cameraGuideObjectCount(int count);
+
+  /// No description provided for @cameraGuideLabelsDetected.
+  ///
+  /// In id, this message translates to:
+  /// **'{labels} terdeteksi di depan.'**
+  String cameraGuideLabelsDetected(String labels);
+
   /// No description provided for @profileHelpCenter.
   ///
   /// In id, this message translates to:
@@ -1693,6 +1843,12 @@ abstract class AppLocalizations {
   /// **'Data yang dikirim'**
   String get chatSharedData;
 
+  /// No description provided for @chatReceivedData.
+  ///
+  /// In id, this message translates to:
+  /// **'Data yang diterima:\n{data}'**
+  String chatReceivedData(String data);
+
   /// No description provided for @issueLateEtaTitle.
   ///
   /// In id, this message translates to:
@@ -1975,6 +2131,12 @@ abstract class AppLocalizations {
   /// **'Mode tamu, ID tiket, dan rute terakhir'**
   String get topicTicketShared;
 
+  /// No description provided for @topicTicketSampleData.
+  ///
+  /// In id, this message translates to:
+  /// **'Kode tiket: TKT-20260827-001\nRute: Manggarai – Tanah Abang\nTanggal perjalanan: 27 Agustus 2026\nStatus: Aktif'**
+  String get topicTicketSampleData;
+
   /// No description provided for @topicTicketAction.
   ///
   /// In id, this message translates to:
@@ -2029,6 +2191,12 @@ abstract class AppLocalizations {
   /// **'Rute terakhir, stasiun asal-tujuan, dan waktu perjalanan'**
   String get topicScheduleShared;
 
+  /// No description provided for @topicScheduleSampleData.
+  ///
+  /// In id, this message translates to:
+  /// **'Stasiun asal: Manggarai\nTujuan: Jakarta Kota\nNomor kereta: KA 1184\nKeberangkatan: 10.25 WIB\nPeron: 3'**
+  String get topicScheduleSampleData;
+
   /// No description provided for @topicScheduleAction.
   ///
   /// In id, this message translates to:
@@ -2082,6 +2250,12 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Status transaksi terakhir, kode tiket, dan waktu pembayaran'**
   String get topicPaymentShared;
+
+  /// No description provided for @topicPaymentSampleData.
+  ///
+  /// In id, this message translates to:
+  /// **'ID transaksi: TRX-20260827-001\nMetode: QRIS\nNominal: Rp7.800\nWaktu: 27 Agustus 2026, 10.20 WIB\nStatus: Berhasil'**
+  String get topicPaymentSampleData;
 
   /// No description provided for @topicPaymentAction.
   ///
@@ -3235,6 +3409,114 @@ abstract class AppLocalizations {
   /// **'Coba lagi'**
   String get assistantRetry;
 
+  /// No description provided for @assistantUnknownDestination.
+  ///
+  /// In id, this message translates to:
+  /// **'Saya belum memahami tujuanmu.'**
+  String get assistantUnknownDestination;
+
+  /// No description provided for @assistantDemoTranscript.
+  ///
+  /// In id, this message translates to:
+  /// **'Saya ingin ke {destination} dari {origin}.'**
+  String assistantDemoTranscript(String destination, String origin);
+
+  /// No description provided for @assistantDemoResponse.
+  ///
+  /// In id, this message translates to:
+  /// **'Rute tercepat membutuhkan 7 menit. Kereta tiba 5 menit lagi.'**
+  String get assistantDemoResponse;
+
+  /// No description provided for @assistantUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Asisten sedang tidak tersedia. Coba lagi atau cek informasi resmi stasiun.'**
+  String get assistantUnavailable;
+
+  /// No description provided for @assistantUnknownCommand.
+  ///
+  /// In id, this message translates to:
+  /// **'Saya belum memahami perintah itu. Coba: “Alarm berikutnya kapan?” atau “Aktifkan semua alarm tiket saya”.'**
+  String get assistantUnknownCommand;
+
+  /// No description provided for @assistantNoActiveTicket.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada tiket aktif'**
+  String get assistantNoActiveTicket;
+
+  /// No description provided for @assistantNoActiveAlarm.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada alarm aktif.'**
+  String get assistantNoActiveAlarm;
+
+  /// No description provided for @assistantAllAlarmsCancelled.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua alarm perjalanan dibatalkan.'**
+  String get assistantAllAlarmsCancelled;
+
+  /// No description provided for @assistantDestinationAlarmAlreadyOff.
+  ///
+  /// In id, this message translates to:
+  /// **'Alarm tujuan sudah nonaktif.'**
+  String get assistantDestinationAlarmAlreadyOff;
+
+  /// No description provided for @assistantDestinationAlarmDisabled.
+  ///
+  /// In id, this message translates to:
+  /// **'Alarm tujuan dinonaktifkan.'**
+  String get assistantDestinationAlarmDisabled;
+
+  /// No description provided for @assistantAllAlarmsActive.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua alarm perjalanan aktif.'**
+  String get assistantAllAlarmsActive;
+
+  /// No description provided for @travelAlarmTrainArrivesIn.
+  ///
+  /// In id, this message translates to:
+  /// **'Kereta datang {minutes} menit lagi'**
+  String travelAlarmTrainArrivesIn(int minutes);
+
+  /// No description provided for @travelAlarmNoActive.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada alarm aktif'**
+  String get travelAlarmNoActive;
+
+  /// No description provided for @travelAlarmExitAt.
+  ///
+  /// In id, this message translates to:
+  /// **'Turun di {destination}, {stations} stasiun lagi'**
+  String travelAlarmExitAt(String destination, int stations);
+
+  /// No description provided for @travelAlarmTransferAt.
+  ///
+  /// In id, this message translates to:
+  /// **'Transit di {station}, {stations} stasiun lagi'**
+  String travelAlarmTransferAt(String station, int stations);
+
+  /// No description provided for @travelAlarmDestinationFallback.
+  ///
+  /// In id, this message translates to:
+  /// **'tujuan'**
+  String get travelAlarmDestinationFallback;
+
+  /// No description provided for @assistantCameraGuideAction.
+  ///
+  /// In id, this message translates to:
+  /// **'Pemandu Kamera'**
+  String get assistantCameraGuideAction;
+
+  /// No description provided for @assistantMessageSemantics.
+  ///
+  /// In id, this message translates to:
+  /// **'{sender}, {message}'**
+  String assistantMessageSemantics(String sender, String message);
+
   /// No description provided for @voiceTapToSpeak.
   ///
   /// In id, this message translates to:
@@ -3612,6 +3894,480 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Lin Pegangsaan Dua - Velodrome'**
   String get homeFilterLRTPegangsaan;
+
+  /// No description provided for @actionRetry.
+  ///
+  /// In id, this message translates to:
+  /// **'Coba Lagi'**
+  String get actionRetry;
+
+  /// No description provided for @homeAreaCentral.
+  ///
+  /// In id, this message translates to:
+  /// **'Jakarta Pusat'**
+  String get homeAreaCentral;
+
+  /// No description provided for @homeAreaSouth.
+  ///
+  /// In id, this message translates to:
+  /// **'Jakarta Selatan'**
+  String get homeAreaSouth;
+
+  /// No description provided for @homeAreaWest.
+  ///
+  /// In id, this message translates to:
+  /// **'Jakarta Barat'**
+  String get homeAreaWest;
+
+  /// No description provided for @homeAreaEast.
+  ///
+  /// In id, this message translates to:
+  /// **'Jakarta Timur'**
+  String get homeAreaEast;
+
+  /// No description provided for @homeAreaNorth.
+  ///
+  /// In id, this message translates to:
+  /// **'Jakarta Utara'**
+  String get homeAreaNorth;
+
+  /// No description provided for @homeAreaGreaterJakarta.
+  ///
+  /// In id, this message translates to:
+  /// **'Bodetabek (Penyangga)'**
+  String get homeAreaGreaterJakarta;
+
+  /// No description provided for @mapNearStation.
+  ///
+  /// In id, this message translates to:
+  /// **'Anda berada di dekat Stasiun {station}'**
+  String mapNearStation(String station);
+
+  /// No description provided for @mapNearestMarkerNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Penanda biru menunjukkan titik stasiun terdekat, bukan posisi GPS persis di peta skematik.'**
+  String get mapNearestMarkerNote;
+
+  /// No description provided for @mapLocateMe.
+  ///
+  /// In id, this message translates to:
+  /// **'Temukan lokasi saya'**
+  String get mapLocateMe;
+
+  /// No description provided for @routePreviewTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Pratinjau Perjalanan'**
+  String get routePreviewTitle;
+
+  /// No description provided for @routePreviewUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Pratinjau line tidak tersedia.'**
+  String get routePreviewUnavailable;
+
+  /// No description provided for @routePreviewLineTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Pratinjau Line Perjalanan'**
+  String get routePreviewLineTitle;
+
+  /// No description provided for @routeCurrentLocation.
+  ///
+  /// In id, this message translates to:
+  /// **'Anda Di Sini: {station}'**
+  String routeCurrentLocation(String station);
+
+  /// No description provided for @routeDimmedLinesNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Line lain diredupkan agar rute perjalanan lebih mudah dilihat.'**
+  String get routeDimmedLinesNote;
+
+  /// No description provided for @routeBackToResults.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali ke hasil perjalanan'**
+  String get routeBackToResults;
+
+  /// No description provided for @routeShowLineMap.
+  ///
+  /// In id, this message translates to:
+  /// **'Lihat Line di Peta'**
+  String get routeShowLineMap;
+
+  /// No description provided for @routeColdStartHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Jika baru membuka server gratis, tunggu cold start lalu coba lagi.'**
+  String get routeColdStartHint;
+
+  /// No description provided for @routeSummarySemantics.
+  ///
+  /// In id, this message translates to:
+  /// **'{minutes} menit, {stops} stasiun, tarif {fare}'**
+  String routeSummarySemantics(int minutes, int stops, String fare);
+
+  /// No description provided for @routeTransferCount.
+  ///
+  /// In id, this message translates to:
+  /// **'{count} transit'**
+  String routeTransferCount(int count);
+
+  /// No description provided for @routeVoiceGuide.
+  ///
+  /// In id, this message translates to:
+  /// **'Panduan suara perjalanan'**
+  String get routeVoiceGuide;
+
+  /// No description provided for @routeFromStation.
+  ///
+  /// In id, this message translates to:
+  /// **'Dari {station}'**
+  String routeFromStation(String station);
+
+  /// No description provided for @routeToStation.
+  ///
+  /// In id, this message translates to:
+  /// **'Ke {station}'**
+  String routeToStation(String station);
+
+  /// No description provided for @routeLiveEta.
+  ///
+  /// In id, this message translates to:
+  /// **'Live ETA'**
+  String get routeLiveEta;
+
+  /// No description provided for @routeFocusJourney.
+  ///
+  /// In id, this message translates to:
+  /// **'Fokus Perjalanan'**
+  String get routeFocusJourney;
+
+  /// No description provided for @routeAllLines.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua Line'**
+  String get routeAllLines;
+
+  /// No description provided for @stationLoadError.
+  ///
+  /// In id, this message translates to:
+  /// **'Server sedang aktif atau koneksi terputus. Data stasiun belum dapat dimuat.'**
+  String get stationLoadError;
+
+  /// No description provided for @ticketSelectedTrip.
+  ///
+  /// In id, this message translates to:
+  /// **'Perjalanan dipilih'**
+  String get ticketSelectedTrip;
+
+  /// No description provided for @ticketPaymentConfirmation.
+  ///
+  /// In id, this message translates to:
+  /// **'Tiket aktif hanya setelah Xendit mengonfirmasi pembayaran ke server.'**
+  String get ticketPaymentConfirmation;
+
+  /// No description provided for @ticketOpenPayment.
+  ///
+  /// In id, this message translates to:
+  /// **'Buka pembayaran'**
+  String get ticketOpenPayment;
+
+  /// No description provided for @ticketCheckStatus.
+  ///
+  /// In id, this message translates to:
+  /// **'Cek status'**
+  String get ticketCheckStatus;
+
+  /// No description provided for @ticketOwnerEmail.
+  ///
+  /// In id, this message translates to:
+  /// **'Email: {email}'**
+  String ticketOwnerEmail(String email);
+
+  /// No description provided for @ticketGateInstruction.
+  ///
+  /// In id, this message translates to:
+  /// **'Tunjukkan kode ini di gerbang'**
+  String get ticketGateInstruction;
+
+  /// No description provided for @ticketDepartureAt.
+  ///
+  /// In id, this message translates to:
+  /// **'Berangkat {time}'**
+  String ticketDepartureAt(String time);
+
+  /// No description provided for @ticketDeviceHeader.
+  ///
+  /// In id, this message translates to:
+  /// **'Menampilkan tiket dari perangkat ini'**
+  String get ticketDeviceHeader;
+
+  /// No description provided for @ticketDeviceSemantics.
+  ///
+  /// In id, this message translates to:
+  /// **'Menampilkan tiket dari perangkat ini, {count}'**
+  String ticketDeviceSemantics(String count);
+
+  /// No description provided for @ticketEmailHeader.
+  ///
+  /// In id, this message translates to:
+  /// **'Menampilkan tiket untuk'**
+  String get ticketEmailHeader;
+
+  /// No description provided for @ticketEmailSemantics.
+  ///
+  /// In id, this message translates to:
+  /// **'Menampilkan tiket untuk {email}'**
+  String ticketEmailSemantics(String email);
+
+  /// No description provided for @ticketPartialHistoryError.
+  ///
+  /// In id, this message translates to:
+  /// **'Sebagian riwayat belum dapat dimuat'**
+  String get ticketPartialHistoryError;
+
+  /// No description provided for @ticketEmptyCategory.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada tiket pada kategori ini.'**
+  String get ticketEmptyCategory;
+
+  /// No description provided for @ticketShowHistory.
+  ///
+  /// In id, this message translates to:
+  /// **'Tampilkan riwayat'**
+  String get ticketShowHistory;
+
+  /// No description provided for @ticketReload.
+  ///
+  /// In id, this message translates to:
+  /// **'Muat ulang tiket'**
+  String get ticketReload;
+
+  /// No description provided for @ticketBackToList.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali ke daftar tiket'**
+  String get ticketBackToList;
+
+  /// No description provided for @scheduleStatusUpcoming.
+  ///
+  /// In id, this message translates to:
+  /// **'Berangkat {minutes} menit lagi'**
+  String scheduleStatusUpcoming(int minutes);
+
+  /// No description provided for @scheduleStatusSoon.
+  ///
+  /// In id, this message translates to:
+  /// **'Segera berangkat'**
+  String get scheduleStatusSoon;
+
+  /// No description provided for @scheduleStatusNow.
+  ///
+  /// In id, this message translates to:
+  /// **'Berangkat sekarang'**
+  String get scheduleStatusNow;
+
+  /// No description provided for @scheduleStatusPassed.
+  ///
+  /// In id, this message translates to:
+  /// **'Jadwal lewat'**
+  String get scheduleStatusPassed;
+
+  /// No description provided for @scheduleStatusUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Status jadwal tidak tersedia'**
+  String get scheduleStatusUnavailable;
+
+  /// No description provided for @scheduleStatusDisclaimer.
+  ///
+  /// In id, this message translates to:
+  /// **'Status berdasarkan jadwal (bukan posisi kereta live)'**
+  String get scheduleStatusDisclaimer;
+
+  /// No description provided for @scheduleServerActive.
+  ///
+  /// In id, this message translates to:
+  /// **'Server sedang aktif'**
+  String get scheduleServerActive;
+
+  /// No description provided for @scheduleBackendError.
+  ///
+  /// In id, this message translates to:
+  /// **'Koneksi ke backend masih disiapkan atau terputus. Coba lagi tanpa menganggap jadwal kosong.'**
+  String get scheduleBackendError;
+
+  /// No description provided for @scheduleDatasetNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Jadwal Commuter Line Februari 2026 · status otomatis berdasarkan jadwal (bukan real-time KAI)'**
+  String get scheduleDatasetNote;
+
+  /// No description provided for @actionRepeat.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulangi'**
+  String get actionRepeat;
+
+  /// No description provided for @actionPause.
+  ///
+  /// In id, this message translates to:
+  /// **'Jeda'**
+  String get actionPause;
+
+  /// No description provided for @actionStop.
+  ///
+  /// In id, this message translates to:
+  /// **'Hentikan'**
+  String get actionStop;
+
+  /// No description provided for @facilityAccessibleLift.
+  ///
+  /// In id, this message translates to:
+  /// **'Lift Aksesibel'**
+  String get facilityAccessibleLift;
+
+  /// No description provided for @facilityEscalator.
+  ///
+  /// In id, this message translates to:
+  /// **'Eskalator'**
+  String get facilityEscalator;
+
+  /// No description provided for @facilityPrayerRoom.
+  ///
+  /// In id, this message translates to:
+  /// **'Musala'**
+  String get facilityPrayerRoom;
+
+  /// No description provided for @facilityAccessibleToilet.
+  ///
+  /// In id, this message translates to:
+  /// **'Toilet Difabel'**
+  String get facilityAccessibleToilet;
+
+  /// No description provided for @facilityCharger.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengisi Daya'**
+  String get facilityCharger;
+
+  /// No description provided for @facilityMinimarket.
+  ///
+  /// In id, this message translates to:
+  /// **'Minimarket'**
+  String get facilityMinimarket;
+
+  /// No description provided for @facilityNursingRoom.
+  ///
+  /// In id, this message translates to:
+  /// **'Ruang Menyusui'**
+  String get facilityNursingRoom;
+
+  /// No description provided for @facilityAtmCenter.
+  ///
+  /// In id, this message translates to:
+  /// **'Pusat ATM'**
+  String get facilityAtmCenter;
+
+  /// No description provided for @mapLocationServiceDisabled.
+  ///
+  /// In id, this message translates to:
+  /// **'Aktifkan layanan lokasi perangkat, lalu coba lagi.'**
+  String get mapLocationServiceDisabled;
+
+  /// No description provided for @mapLocationPermissionDenied.
+  ///
+  /// In id, this message translates to:
+  /// **'Izin lokasi dibutuhkan untuk menemukan stasiun terdekat.'**
+  String get mapLocationPermissionDenied;
+
+  /// No description provided for @stationVoiceEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada stasiun yang sesuai dengan pencarian.'**
+  String get stationVoiceEmpty;
+
+  /// No description provided for @stationVoiceFound.
+  ///
+  /// In id, this message translates to:
+  /// **'Ditemukan {count} stasiun. Hasil teratas:'**
+  String stationVoiceFound(int count);
+
+  /// No description provided for @routeNarrationSummary.
+  ///
+  /// In id, this message translates to:
+  /// **'Rute dari {from} menuju {to}. Estimasi waktu {minutes} menit. Tarif {currency}{fare}.'**
+  String routeNarrationSummary(
+    String from,
+    String to,
+    int minutes,
+    String currency,
+    String fare,
+  );
+
+  /// No description provided for @ticketStatusPending.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum dibayar'**
+  String get ticketStatusPending;
+
+  /// No description provided for @ticketStatusPaid.
+  ///
+  /// In id, this message translates to:
+  /// **'Dibayar'**
+  String get ticketStatusPaid;
+
+  /// No description provided for @ticketStatusUsed.
+  ///
+  /// In id, this message translates to:
+  /// **'Sudah digunakan'**
+  String get ticketStatusUsed;
+
+  /// No description provided for @ticketStatusExpired.
+  ///
+  /// In id, this message translates to:
+  /// **'Kedaluwarsa'**
+  String get ticketStatusExpired;
+
+  /// No description provided for @ticketStatusCancelled.
+  ///
+  /// In id, this message translates to:
+  /// **'Dibatalkan'**
+  String get ticketStatusCancelled;
+
+  /// No description provided for @ticketStatusUnknown.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak diketahui'**
+  String get ticketStatusUnknown;
+
+  /// No description provided for @travelAlarmInactive.
+  ///
+  /// In id, this message translates to:
+  /// **'Alarm perjalanan belum diaktifkan'**
+  String get travelAlarmInactive;
+
+  /// No description provided for @routeLoadError.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak dapat memuat rute. Periksa koneksi dan coba lagi.'**
+  String get routeLoadError;
+
+  /// No description provided for @routeNoTransit.
+  ///
+  /// In id, this message translates to:
+  /// **'Tanpa transit'**
+  String get routeNoTransit;
+
+  /// No description provided for @ticketEmailInputLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Email untuk tiket dan riwayat'**
+  String get ticketEmailInputLabel;
 }
 
 class _AppLocalizationsDelegate

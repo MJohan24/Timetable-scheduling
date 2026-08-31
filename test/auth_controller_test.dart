@@ -19,6 +19,7 @@ class _FakeAuthRepository implements AuthRepository {
   _FakeAuthRepository({this.bootstrapResult = const AuthBootstrapResult()});
 
   AuthBootstrapResult bootstrapResult;
+  bool failBootstrapUnexpectedly = false;
   bool failLogin = false;
   AccountUser? _currentUser;
 
@@ -27,6 +28,9 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<AuthBootstrapResult> bootstrap() async {
+    if (failBootstrapUnexpectedly) {
+      throw StateError('secure storage unavailable');
+    }
     _currentUser = bootstrapResult.user;
     return bootstrapResult;
   }
@@ -78,6 +82,17 @@ void main() {
       expect(controller.user, _user);
     },
   );
+
+  test('bootstrap failure falls back to guest mode', () async {
+    final repository = _FakeAuthRepository()..failBootstrapUnexpectedly = true;
+    final controller = AuthController(repository);
+
+    await controller.bootstrap();
+
+    expect(controller.status, AuthStatus.guest);
+    expect(controller.user, isNull);
+    expect(controller.errorCode, 'AUTH_RESTORE_FAILED');
+  });
 
   test('invalid login returns to guest with a stable error code', () async {
     final repository = _FakeAuthRepository()..failLogin = true;

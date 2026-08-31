@@ -45,18 +45,19 @@ class LineData {
 }
 
 /// Stable key for one physical line segment between two station nodes.
-/// Station names are used because the route API and schematic map use
-/// different internal station identifiers.
-String mapRouteSegmentKey(
-  String lineId,
-  String firstStation,
-  String secondStation,
-) {
-  final stations = [
-    firstStation.trim().toLowerCase(),
-    secondStation.trim().toLowerCase(),
+String mapRouteSegmentKey(String lineId, String firstNode, String secondNode) {
+  final nodes = [
+    firstNode.trim().toLowerCase(),
+    secondNode.trim().toLowerCase(),
   ]..sort();
-  return '$lineId|${stations[0]}|${stations[1]}';
+  return '$lineId|${nodes[0]}|${nodes[1]}';
+}
+
+/// Node codes are line-specific. Waypoints do not have a public code, so
+/// their stable schematic ID is used to keep every physical edge distinct.
+String mapSegmentNodeIdentity(StationData station) {
+  final code = station.code.trim();
+  return code.isNotEmpty ? code : station.id;
 }
 
 /// Koneksi antarmoda yang ditempuh dengan berjalan kaki, bukan jalur rel.
@@ -1882,7 +1883,11 @@ class SchematicMapPainter extends CustomPainter {
         final from = lineStations[index];
         final to = lineStations[index + 1];
         if (!highlightedSegmentIds!.contains(
-          mapRouteSegmentKey(line.id, from.name, to.name),
+          mapRouteSegmentKey(
+            line.id,
+            mapSegmentNodeIdentity(from),
+            mapSegmentNodeIdentity(to),
+          ),
         )) {
           continue;
         }

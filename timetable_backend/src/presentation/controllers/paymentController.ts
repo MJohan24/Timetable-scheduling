@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { ApiError } from '../../domain/errors/ApiError';
 import { TicketService } from '../../domain/services/ticketService';
+import { assertTicketPaymentAccess } from '../../domain/services/ticketAccessService';
 import { prisma } from '../../infrastructure/database/prismaClient';
 import {
   createPaymentSession,
@@ -11,7 +12,10 @@ import {
 } from '../../infrastructure/payments/xenditClient';
 import { verifyXenditCallbackToken } from '../../infrastructure/payments/xenditWebhook';
 
-const checkoutSchema = z.object({ ticketId: z.string().uuid() });
+const checkoutSchema = z.object({
+  ticketId: z.string().uuid(),
+  contactEmail: z.string().email().optional(),
+});
 
 export const checkout = async (req: Request, res: Response, next: NextFunction) => {
   let paymentId: string | undefined;
@@ -33,6 +37,7 @@ export const checkout = async (req: Request, res: Response, next: NextFunction) 
       },
     });
     if (!ticket) throw new ApiError(404, 'Ticket not found', 'TICKET_NOT_FOUND');
+    assertTicketPaymentAccess(ticket, req.auth, parsed.data.contactEmail);
     if (!['PENDING', 'PAYMENT_PENDING'].includes(ticket.status)) {
       throw new ApiError(409, `Ticket status is ${ticket.status}`, 'TICKET_NOT_PAYABLE');
     }
@@ -91,6 +96,10 @@ export const checkout = async (req: Request, res: Response, next: NextFunction) 
 
 export const getPaymentStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const query = z.object({ contactEmail: z.string().email().optional() }).safeParse(req.query);
+    if (!query.success) {
+      throw new ApiError(400, 'Invalid payment status query', 'VALIDATION_ERROR');
+    }
     const ticketId = Array.isArray(req.params.ticketId)
       ? req.params.ticketId[0]
       : req.params.ticketId;
@@ -99,6 +108,7 @@ export const getPaymentStatus = async (req: Request, res: Response, next: NextFu
       include: { payments: { orderBy: { createdAt: 'desc' } } },
     });
     if (!ticket) throw new ApiError(404, 'Ticket not found', 'TICKET_NOT_FOUND');
+    assertTicketPaymentAccess(ticket, req.auth, query.data.contactEmail);
     res.json({ success: true, data: { ticketStatus: ticket.status, payment: ticket.payments[0] ?? null } });
   } catch (error) {
     next(error);
