@@ -144,3 +144,107 @@ Expected: tests and build exit with code 0; live response uses facts from the ba
 git add timetable_backend/src/domain/services/assistantService.ts timetable_backend/tests/assistantService.test.ts
 git commit -m "feat: ground assistant routes in backend data"
 ```
+
+### Task 3: Send bounded temporary conversation context
+
+**Files:**
+- Modify: `lib/features/assistant/domain/repositories/assistant_chat_repository.dart`
+- Modify: `lib/features/assistant/data/repositories/assistant_chat_repository_impl.dart`
+- Modify: `lib/features/assistant/data/datasources/assistant_chat_remote_data_source.dart`
+- Modify: `lib/features/assistant/presentation/controllers/assistant_conversation_controller.dart`
+- Modify: `test/assistant_conversation_controller_test.dart`
+- Modify: `timetable_backend/src/presentation/controllers/assistantController.ts`
+- Modify: `timetable_backend/src/domain/services/assistantService.ts`
+- Modify: `timetable_backend/tests/assistantService.test.ts`
+
+- [ ] **Step 1: Write failing Flutter and backend tests**
+
+```dart
+expect(repository.history, [
+  const AssistantChatTurn(role: AssistantChatRole.user, text: 'Aku mau naik dari Pondok Ranji'),
+  const AssistantChatTurn(role: AssistantChatRole.assistant, text: 'Tujuannya ke mana?'),
+]);
+```
+
+```ts
+assert.deepEqual(
+  extractRouteRequest('Tujuannya ke Jakarta Kota', [
+    { role: 'user', text: 'Aku mau naik dari Pondok Ranji' },
+  ]),
+  { from: 'Pondok Ranji', to: 'Jakarta Kota' },
+);
+assert.equal(assistantMessageSchema.safeParse({
+  message: 'Tujuannya ke Jakarta Kota',
+  history: Array.from({ length: 9 }, () => ({ role: 'user', text: 'halo' })),
+}).success, false);
+```
+
+- [ ] **Step 2: Run the focused tests and verify failure**
+
+Run:
+
+```bash
+flutter test test/assistant_conversation_controller_test.dart
+cd timetable_backend
+node --import tsx --test tests/assistantService.test.ts
+```
+
+Expected: FAIL because the repository has no history argument and the backend ignores prior turns.
+
+- [ ] **Step 3: Add bounded client request history**
+
+```dart
+enum AssistantChatRole { user, assistant }
+
+class AssistantChatTurn {
+  const AssistantChatTurn({required this.role, required this.text});
+
+  final AssistantChatRole role;
+  final String text;
+}
+
+Future<String> ask(
+  String message, {
+  List<AssistantChatTurn> history = const [],
+});
+```
+
+`AssistantConversationController` derives the last eight preceding user and assistant message items before it sends the current text. The remote data source serializes them as `history: [{ role, text }]` with the current `message`. Do not persist the turns.
+
+- [ ] **Step 4: Validate and use backend context**
+
+```ts
+const assistantHistoryTurnSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  text: z.string().trim().min(1).max(1000),
+});
+
+export const assistantMessageSchema = z.object({
+  message: z.string().trim().min(1).max(1000),
+  history: z.array(assistantHistoryTurnSchema).max(8).default([]),
+});
+```
+
+Pass validated history to `AssistantService.reply`. Append it to the Gemini prompt as untrusted conversation context. Extend route extraction so a current destination phrase can combine with the latest prior user origin; preserve the existing direct `dari <stasiun> ke <stasiun>` path. Only route the combined request through `RouteService`; malformed or ambiguous station names return the existing clarification.
+
+- [ ] **Step 5: Run focused, full, and live checks**
+
+Run:
+
+```bash
+flutter test test/assistant_conversation_controller_test.dart
+flutter analyze
+cd timetable_backend
+npm test
+npm run build
+curl -sS -X POST http://localhost:3000/api/v1/assistant/chat -H 'Content-Type: application/json' --data '{"message":"Tujuannya ke Jakarta Kota","history":[{"role":"user","text":"Aku mau naik dari Pondok Ranji"},{"role":"assistant","text":"Tujuannya ke mana?"}]}'
+```
+
+Expected: Flutter tests and analyzer pass; backend tests and build pass; live response uses Pondok Ranji as the origin and route facts from `RouteService`.
+
+- [ ] **Step 6: Commit implementation**
+
+```bash
+git add lib/features/assistant test/assistant_conversation_controller_test.dart timetable_backend/src/domain/services/assistantService.ts timetable_backend/src/presentation/controllers/assistantController.ts timetable_backend/tests/assistantService.test.ts
+git commit -m "feat: preserve assistant context within active chat"
+```
