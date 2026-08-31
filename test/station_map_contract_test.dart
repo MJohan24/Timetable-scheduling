@@ -3,14 +3,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timetable/core/theme/app_colors.dart';
 import 'package:timetable/features/home/presentation/widgets/map_widgets.dart';
 import 'package:timetable/shared/widgets/schematic_map_painter.dart';
 
-Future<ByteData> _renderMapPixels() async {
+Future<ByteData> _renderMapPixels({Set<String>? highlightedSegmentIds}) async {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder)..drawColor(Colors.white, BlendMode.src);
   SchematicMapPainter(
     showColors: true,
+    highlightedSegmentIds: highlightedSegmentIds,
   ).paint(canvas, const Size(kMapWidth, kMapHeight));
   final image = await recorder.endRecording().toImage(
     kMapWidth.toInt(),
@@ -46,6 +48,84 @@ bool _regionContainsColor(ByteData pixels, Rect region, Color target) {
 void main() {
   StationData station(String id) =>
       stations.firstWhere((item) => item.id == id);
+
+  test(
+    'route highlight follows the existing rounded corner at original width',
+    () async {
+      final normal = await _renderMapPixels();
+      final focused = await _renderMapPixels(
+        highlightedSegmentIds: {
+          mapRouteSegmentKey('cikarang_loop', 'C07', 'wp_kb_top'),
+          mapRouteSegmentKey('cikarang_loop', 'wp_kb_top', 'wp_kb_left'),
+          mapRouteSegmentKey('cikarang_loop', 'wp_kb_left', 'C08'),
+        },
+      );
+      // Compare the entire bend, not only the straight sections between nodes.
+      for (var y = 145; y < 225; y++) {
+        for (var x = 1205; x < 1280; x++) {
+          final point = Offset(x.toDouble(), y.toDouble());
+          expect(
+            _pixelMatches(focused, point, AppColors.lineCikarang),
+            _pixelMatches(normal, point, AppColors.lineCikarang),
+            reason: 'Route geometry changed at $point',
+          );
+        }
+      }
+      expect(
+        _pixelMatches(
+          focused,
+          const Offset(1450, 510),
+          const Color(0xFFCDD1DB),
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test('active and inactive edges share the same rounded bend', () async {
+    final pixels = await _renderMapPixels(
+      highlightedSegmentIds: {
+        mapRouteSegmentKey('cikarang_loop', 'wp_kb_top', 'wp_kb_left'),
+      },
+    );
+    expect(
+      _pixelMatches(pixels, const Offset(1245, 167), AppColors.lineCikarang),
+      isTrue,
+    );
+    expect(
+      _pixelMatches(pixels, const Offset(1268, 193), const Color(0xFFCDD1DB)),
+      isTrue,
+    );
+    expect(
+      _pixelMatches(pixels, const Offset(1270, 165), Colors.white),
+      isTrue,
+    );
+  });
+
+  test(
+    'inactive Cikarang crossing cannot cover the active Bogor route',
+    () async {
+      final pixels = await _renderMapPixels(
+        highlightedSegmentIds: {
+          mapRouteSegmentKey('bogor', 'B09', 'wp_bogor_manggarai_out'),
+          mapRouteSegmentKey('bogor', 'wp_bogor_manggarai_out', 'B10'),
+        },
+      );
+      expect(
+        _pixelMatches(pixels, const Offset(1510, 1230), AppColors.lineBogor),
+        isTrue,
+        reason: 'The inactive Cikarang line must not cut the selected route',
+      );
+      expect(
+        _pixelMatches(
+          pixels,
+          const Offset(1490, 1230),
+          const Color(0xFFCDD1DB),
+        ),
+        isTrue,
+      );
+    },
+  );
 
   test(
     'official station labels and public codes match supplied route maps',
@@ -159,11 +239,39 @@ void main() {
       painter.stationLabelPositionFor(station('lebak_bulus')),
       LabelPos.top,
     );
+    expect(painter.stationLabelPositionFor(station('sudirman')), LabelPos.top);
+  });
+
+  test('Jakarta Kota route badges leave room for the station hub', () async {
+    final pixels = await _renderMapPixels();
     expect(
-      painter.stationLabelPositionFor(station('sudirman')),
-      LabelPos.right,
+      _pixelMatches(pixels, const Offset(870, 246), AppColors.lineBogor),
+      isTrue,
+    );
+    expect(
+      _pixelMatches(pixels, const Offset(920, 246), AppColors.lineTanjungPriok),
+      isTrue,
     );
   });
+
+  test(
+    'Sudirman label stays above the station and clear of the MRT line',
+    () async {
+      final pixels = await _renderMapPixels();
+      expect(
+        _pixelMatches(pixels, const Offset(1075, 965), AppColors.lineMRT),
+        isTrue,
+      );
+      expect(
+        _regionContainsColor(
+          pixels,
+          const Rect.fromLTRB(1089, 950, 1220, 975),
+          AppColors.textPrimary,
+        ),
+        isTrue,
+      );
+    },
+  );
 
   test('Cikoko to Cawang is a separate black walking overlay', () async {
     expect(walkingConnections, hasLength(1));
