@@ -38,6 +38,12 @@ For a follow-up route message, the backend combines the latest origin mentioned 
 
 The context exists only while the assistant page controller remains alive. Closing or recreating the page starts a fresh conversation; persistence is intentionally out of scope.
 
+## Casual conversation behavior
+
+When a user is making small talk or only states a current location, the assistant does not create a route or explain line direction. It responds naturally to what was said and asks one concise follow-up only when needed. For example, `Aku lagi di Bintaro nih` becomes `Oh, kamu lagi di Bintaro ya 🚆 Mau lanjut ke stasiun mana?`.
+
+The backend treats `di <stasiun>`, `lagi di <stasiun>`, and `berangkat dari <stasiun>` as possible origins in previous user turns. A backend route is calculated only once a destination is clear. Generic greetings remain conversational and short; the assistant must not use a repetitive greeting, invent travel facts, or show a route before it is requested.
+
 ## Error handling
 
 Provider, quota, timeout, and empty-response handling remains unchanged. The fixed out-of-scope reply is a successful AI reply, not an API error.
@@ -53,4 +59,5 @@ Add focused service tests for:
 - Flutter sends a bounded history in correct user/assistant order.
 - Backend rejects malformed, overlong, or oversized history before Gemini is invoked.
 - A follow-up destination can reuse a prior origin to query `RouteService`.
+- Small-talk and location-only prompts request only a destination and do not explain a route or line direction.
 - Existing in-scope and provider error behavior still passing.
