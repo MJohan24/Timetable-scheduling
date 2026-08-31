@@ -44,7 +44,9 @@ class AssistantConversationController extends ChangeNotifier {
       _isSending = true;
       notifyListeners();
       try {
-        _appendAssistant(await chatRepository!.ask(text));
+        _appendAssistant(
+          await chatRepository!.ask(text, history: _historyBeforeCurrent()),
+        );
       } on Exception {
         _appendAssistant(copy.unavailable);
       } finally {
@@ -149,6 +151,29 @@ class AssistantConversationController extends ChangeNotifier {
       kind: AssistantConversationItemKind.message,
       text: text,
     );
+  }
+
+  List<AssistantChatTurn> _historyBeforeCurrent() {
+    final previous = _items
+        .take(_items.length - 1)
+        .where(
+          (item) =>
+              item.kind == AssistantConversationItemKind.message ||
+              item.kind == AssistantConversationItemKind.routeSuggestion,
+        )
+        .toList();
+    final start = previous.length > 8 ? previous.length - 8 : 0;
+    return previous
+        .sublist(start)
+        .map(
+          (item) => AssistantChatTurn(
+            role: item.author == AssistantMessageAuthor.user
+                ? AssistantChatRole.user
+                : AssistantChatRole.assistant,
+            text: item.text,
+          ),
+        )
+        .toList(growable: false);
   }
 
   void _appendAlarmStatus(String text) {

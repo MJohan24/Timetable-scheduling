@@ -1,7 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timetable/features/assistant/domain/entities/assistant_conversation_item.dart';
+import 'package:timetable/features/assistant/domain/repositories/assistant_chat_repository.dart';
 import 'package:timetable/features/assistant/presentation/controllers/assistant_conversation_controller.dart';
 import 'package:timetable/features/travel_alarm/presentation/controllers/travel_alarm_controller.dart';
+
+class _CapturingChatRepository implements AssistantChatRepository {
+  String? message;
+  List<AssistantChatTurn> history = const [];
+
+  @override
+  Future<String> ask(
+    String value, {
+    List<AssistantChatTurn> history = const [],
+  }) async {
+    message = value;
+    this.history = history;
+    return 'Siap, mau ke stasiun mana?';
+  }
+}
 
 void main() {
   test('typed command activates every alarm and appends ordered messages', () {
@@ -140,5 +156,28 @@ void main() {
     expect(activation.alarmSnapshot?.departureAlarmEnabled, isTrue);
     expect(activation.alarmSnapshot?.destinationAlarmEnabled, isTrue);
     expect(alarms.state.hasAnyAlarm, isFalse);
+  });
+
+  test('typed chat sends recent turns as temporary context', () async {
+    final alarms = TravelAlarmController();
+    final repository = _CapturingChatRepository();
+    final chat = AssistantConversationController(
+      alarmController: alarms,
+      chatRepository: repository,
+    );
+    addTearDown(chat.dispose);
+    addTearDown(alarms.dispose);
+
+    await chat.submitText('Aku mau naik dari Pondok Ranji');
+    await chat.submitText('Tujuannya ke Jakarta Kota');
+
+    expect(repository.message, 'Tujuannya ke Jakarta Kota');
+    expect(
+      repository.history.map((turn) => (turn.role, turn.text)),
+      [
+        (AssistantChatRole.user, 'Aku mau naik dari Pondok Ranji'),
+        (AssistantChatRole.assistant, 'Siap, mau ke stasiun mana?'),
+      ],
+    );
   });
 }

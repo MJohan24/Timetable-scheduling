@@ -8,5 +8,9 @@ class AssistantChatRepositoryImpl implements AssistantChatRepository {
   final AssistantChatRemoteDataSource _remote;
 
   @override
-  Future<String> ask(String message) => _remote.ask(message);
+  Future<String> ask(
+    String message, {
+    List<AssistantChatTurn> history = const [],
+  }) =>
+      _remote.ask(message, history: history);
 }

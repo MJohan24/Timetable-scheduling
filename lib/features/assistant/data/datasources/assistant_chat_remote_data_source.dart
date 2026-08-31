@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../../core/config/api_config.dart';
 import '../../../../core/network/api_timeouts.dart';
+import '../../domain/repositories/assistant_chat_repository.dart';
 
 class AssistantChatRemoteDataSource {
   AssistantChatRemoteDataSource({http.Client? client})
@@ -11,12 +12,21 @@ class AssistantChatRemoteDataSource {
 
   final http.Client _client;
 
-  Future<String> ask(String message) async {
+  Future<String> ask(
+    String message, {
+    List<AssistantChatTurn> history = const [],
+  }) async {
     final response = await _client
         .post(
           Uri.parse('${ApiConfig.baseUrl}/assistant/chat'),
           headers: const {'content-type': 'application/json'},
-          body: jsonEncode({'message': message}),
+          body: jsonEncode({
+            'message': message,
+            if (history.isNotEmpty)
+              'history': history
+                  .map((turn) => {'role': turn.role.name, 'text': turn.text})
+                  .toList(growable: false),
+          }),
         )
         .timeout(ApiTimeouts.request);
     final body = jsonDecode(response.body) as Map<String, dynamic>;

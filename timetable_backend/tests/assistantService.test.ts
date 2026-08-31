@@ -80,6 +80,16 @@ test('assistant extracts a station-to-station route request', () => {
   assert.equal(extractRouteRequest('Jadwal Bekasi hari ini'), null);
 });
 
+test('assistant combines a prior origin with a follow-up destination', () => {
+  assert.deepEqual(
+    extractRouteRequest('Tujuannya ke Jakarta Kota', [
+      { role: 'user', text: 'Aku mau naik dari Pondok Ranji' },
+      { role: 'assistant', text: 'Tujuannya ke mana?' },
+    ]),
+    { from: 'Pondok Ranji', to: 'Jakarta Kota' },
+  );
+});
+
 test('assistant prompt preserves backend route facts and warm style rules', () => {
   const prompt = buildAssistantPrompt('Rute dari Bekasi ke Jakarta Kota', routeFixture);
 
@@ -97,4 +107,11 @@ test('assistant message validation rejects empty and oversized input', () => {
     false,
   );
   assert.equal(assistantMessageSchema.safeParse({ message: ' Halo ' }).success, true);
+  assert.equal(
+    assistantMessageSchema.safeParse({
+      message: 'Tujuannya ke Jakarta Kota',
+      history: Array.from({ length: 9 }, () => ({ role: 'user', text: 'halo' })),
+    }).success,
+    false,
+  );
 });

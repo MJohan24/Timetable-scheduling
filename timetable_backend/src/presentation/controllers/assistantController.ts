@@ -7,8 +7,14 @@ import {
 } from '../../domain/services/assistantService';
 import { VisionService } from '../../domain/services/visionService';
 
+const assistantHistoryTurnSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  text: z.string().trim().min(1).max(1000),
+});
+
 export const assistantMessageSchema = z.object({
   message: z.string().trim().min(1).max(1000),
+  history: z.array(assistantHistoryTurnSchema).max(8).default([]),
 });
 
 const assistantService = new AssistantService();
@@ -26,7 +32,7 @@ export const askAssistant = async (
   }
 
   try {
-    const reply = await assistantService.reply(parsed.data.message);
+    const reply = await assistantService.reply(parsed.data.message, parsed.data.history);
     res.json({ success: true, data: { reply } });
   } catch (error) {
     if (error instanceof AssistantProviderError) {
