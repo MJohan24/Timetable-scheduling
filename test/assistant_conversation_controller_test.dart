@@ -180,4 +180,24 @@ void main() {
       ],
     );
   });
+
+  test('typed chat bounds temporary context to six prior turns', () async {
+    final alarms = TravelAlarmController();
+    final repository = _CapturingChatRepository();
+    final chat = AssistantConversationController(
+      alarmController: alarms,
+      chatRepository: repository,
+    );
+    addTearDown(chat.dispose);
+    addTearDown(alarms.dispose);
+
+    for (var index = 0; index < 4; index++) {
+      await chat.submitText('Pesan $index');
+    }
+    await chat.submitText('Pesan terakhir');
+
+    expect(repository.history, hasLength(6));
+    expect(repository.history.first.text, 'Pesan 1');
+    expect(repository.history.last.text, 'Siap, mau ke stasiun mana?');
+  });
 }

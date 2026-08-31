@@ -14,7 +14,7 @@ const assistantHistoryTurnSchema = z.object({
 
 export const assistantMessageSchema = z.object({
   message: z.string().trim().min(1).max(1000),
-  history: z.array(assistantHistoryTurnSchema).max(8).default([]),
+  history: z.array(assistantHistoryTurnSchema).max(6).default([]),
 });
 
 const assistantService = new AssistantService();

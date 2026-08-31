@@ -90,6 +90,31 @@ test('assistant combines a prior origin with a follow-up destination', () => {
   );
 });
 
+test('assistant reuses a casually stated location as the origin', () => {
+  assert.deepEqual(
+    extractRouteRequest('Mau ke Jakarta Kota', [
+      { role: 'user', text: 'Aku lagi di Bintaro nih' },
+    ]),
+    { from: 'Bintaro', to: 'Jakarta Kota' },
+  );
+});
+
+test('assistant understands destination-first natural route phrasing', () => {
+  assert.deepEqual(
+    extractRouteRequest(
+      'Aku mau ke Jakarta Kota dari Bintaro, kira-kira naiknya apa ya?',
+    ),
+    { from: 'Bintaro', to: 'Jakarta Kota' },
+  );
+});
+
+test('assistant ignores common filler in origin-first route phrasing', () => {
+  assert.deepEqual(
+    extractRouteRequest('Aku dari Bintaro mau ke Jakarta Kota, naik apa ya?'),
+    { from: 'Bintaro', to: 'Jakarta Kota' },
+  );
+});
+
 test('assistant prompt preserves backend route facts and warm style rules', () => {
   const prompt = buildAssistantPrompt('Rute dari Bekasi ke Jakarta Kota', routeFixture);
 
@@ -99,6 +124,15 @@ test('assistant prompt preserves backend route facts and warm style rules', () =
   assert.match(prompt, /Jangan mengubah fakta rute/);
   assert.match(prompt, /maksimal dua emoji/);
 });
+
+test('assistant prompt keeps location-only chat conversational', () => {
+  const prompt = buildAssistantPrompt('Aku lagi di Bintaro nih');
+
+  assert.match(prompt, /hanya menyebut lokasi/);
+  assert.match(prompt, /Jangan membuat rute/);
+  assert.match(prompt, /Jangan selalu membuka jawaban dengan "Halo"/);
+});
+
 
 test('assistant message validation rejects empty and oversized input', () => {
   assert.equal(assistantMessageSchema.safeParse({ message: '' }).success, false);
@@ -110,7 +144,7 @@ test('assistant message validation rejects empty and oversized input', () => {
   assert.equal(
     assistantMessageSchema.safeParse({
       message: 'Tujuannya ke Jakarta Kota',
-      history: Array.from({ length: 9 }, () => ({ role: 'user', text: 'halo' })),
+      history: Array.from({ length: 7 }, () => ({ role: 'user', text: 'halo' })),
     }).success,
     false,
   );

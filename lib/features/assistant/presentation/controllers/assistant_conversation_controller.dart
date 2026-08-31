@@ -162,7 +162,7 @@ class AssistantConversationController extends ChangeNotifier {
               item.kind == AssistantConversationItemKind.routeSuggestion,
         )
         .toList();
-    final start = previous.length > 8 ? previous.length - 8 : 0;
+    final start = previous.length > 6 ? previous.length - 6 : 0;
     return previous
         .sublist(start)
         .map(

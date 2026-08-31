@@ -25,11 +25,25 @@ export class AssistantProviderError extends Error {
 }
 
 const trimRoutePart = (value: string) =>
-  value.replace(/\s+(?:hari ini|ya|dong|tolong)$/i, '').trim();
+  value
+    .replace(/[,.!?].*$/, '')
+    .replace(
+      /\s+(?:hari ini|kira(?:-|\s)?kira|naiknya|gimana|bagaimana|apa|ya|dong|tolong|nih|sih|darimana|gitu)(?:\s+.*)?$/i,
+      '',
+    )
+    .trim();
 
 const extractOrigin = (message: string) => {
-  const match = message.trim().match(/\bdari\s+(.+?)[?.!]*$/i);
-  return match ? trimRoutePart(match[1]) : null;
+  const text = message.trim();
+  const patterns = [
+    /\b(?:berangkat\s+)?dari\s+(.+?)[?.!]*$/i,
+    /\b(?:lagi\s+)?di\s+(.+?)[?.!]*$/i,
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return trimRoutePart(match[1]);
+  }
+  return null;
 };
 
 const extractDestination = (message: string) => {
@@ -41,12 +55,22 @@ export const extractRouteRequest = (
   message: string,
   history: AssistantHistoryTurn[] = [],
 ) => {
-  const match = message
-    .trim()
-    .match(/\bdari\s+(.+?)\s+(?:ke|menuju)\s+(.+?)[?.!]*$/i);
-  if (match) {
-    const from = trimRoutePart(match[1]);
-    const to = trimRoutePart(match[2]);
+  const text = message.trim();
+  const destinationFirst = text.match(
+    /\b(?:mau\s+)?(?:ke|menuju)\s+(.+?)\s+\bdari\s+(.+?)[?.!]*$/i,
+  );
+  if (destinationFirst) {
+    const to = trimRoutePart(destinationFirst[1]);
+    const from = trimRoutePart(destinationFirst[2]);
+    return from && to ? { from, to } : null;
+  }
+
+  const originFirst = text.match(
+    /\bdari\s+(.+?)\s+(?:(?:mau|ingin)\s+)?(?:ke|menuju)\s+(.+?)[?.!]*$/i,
+  );
+  if (originFirst) {
+    const from = trimRoutePart(originFirst[1]);
+    const to = trimRoutePart(originFirst[2]);
     return from && to ? { from, to } : null;
   }
 
@@ -97,6 +121,11 @@ Jika DATA RUTE BACKEND tersedia, gunakan hanya fakta dan langkah di dalamnya. Ja
 menambah stasiun atau transit, maupun mengganti tarif dan durasi. Awali jawaban rute dengan satu kalimat
 yang hangat, lalu tulis langkah seperlunya. Gunakan maksimal dua emoji yang relevan. Jangan menutup jawaban
 dengan pertanyaan atau disclaimer generik kecuali pengguna memang menanyakannya.
+Jika pengguna hanya menyebut lokasi atau sedang basa-basi, tanggapi pesannya secara natural. Bila pengguna
+hanya menyebut lokasi, akui lokasi itu lalu tanyakan hanya tujuan. Jangan membuat rute, menyebut jalur atau
+arah, maupun memberi daftar stasiun sebelum tujuan jelas. Jangan selalu membuka jawaban dengan "Halo".
+Pahami frase perjalanan sehari-hari tanpa meminta format baku, termasuk tujuan yang disebut lebih dulu,
+misalnya "mau ke Jakarta Kota dari Bintaro". Jika asal atau tujuan belum jelas, tanyakan satu hal yang kurang.
 
 ${route ? `${buildRouteContext(route)}\n` : ''}
 ${buildHistoryContext(history)}
