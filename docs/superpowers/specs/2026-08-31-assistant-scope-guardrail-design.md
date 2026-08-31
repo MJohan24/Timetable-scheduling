@@ -42,7 +42,7 @@ The context exists only while the assistant page controller remains alive. Closi
 
 When a user is making small talk or only states a current location, the assistant does not create a route or explain line direction. It responds naturally to what was said and asks one concise follow-up only when needed. For example, `Aku lagi di Bintaro nih` becomes `Oh, kamu lagi di Bintaro ya 🚆 Mau lanjut ke stasiun mana?`.
 
-The backend treats `di <stasiun>`, `lagi di <stasiun>`, and `berangkat dari <stasiun>` as possible origins in previous user turns. A backend route is calculated only once a destination is clear. Generic greetings remain conversational and short; the assistant must not use a repetitive greeting, invent travel facts, or show a route before it is requested.
+The backend treats `di <stasiun>`, `lagi di <stasiun>`, and `berangkat dari <stasiun>` as possible origins in previous user turns. It also recognizes a complete route in natural word order, including `mau ke <tujuan> dari <asal>` and trailing conversational filler such as `kira-kira naiknya apa ya`. A backend route is calculated only once both station identities are clear. Generic greetings remain conversational and short; the assistant must not use a repetitive greeting, invent travel facts, or show a route before it is requested.
 
 ## Error handling
 
