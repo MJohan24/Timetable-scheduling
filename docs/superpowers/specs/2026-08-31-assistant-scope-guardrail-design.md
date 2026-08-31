@@ -30,6 +30,14 @@ Replies use a warm, conversational Indonesian tone. For a route, they begin with
 
 If either station cannot be resolved, the assistant asks the user to state the station name again rather than guessing. The existing `POST /api/v1/assistant/chat` request and response format stays unchanged; this route enrichment is internal to the backend.
 
+## Session context
+
+The chat remains stateless on the server and no conversation data is written to Neon. For every request, Flutter sends the current message plus up to eight preceding user and assistant turns from the open assistant page. The backend validates each turn and supplies it to Gemini as untrusted session context before the current message.
+
+For a follow-up route message, the backend combines the latest origin mentioned in earlier user turns with a destination in the current message. It then calls `RouteService.planRoute` as usual. A vague destination such as `Jakarta Pusat` still produces a friendly clarification because it is not a station identity.
+
+The context exists only while the assistant page controller remains alive. Closing or recreating the page starts a fresh conversation; persistence is intentionally out of scope.
+
 ## Error handling
 
 Provider, quota, timeout, and empty-response handling remains unchanged. The fixed out-of-scope reply is a successful AI reply, not an API error.
@@ -42,4 +50,7 @@ Add focused service tests for:
 - Exact fixed reply requirement for out-of-scope requests.
 - Route-context prompt includes facts from `RouteService` and explicitly forbids changing them.
 - Natural-language route extraction accepts `dari <stasiun> ke <stasiun>`.
+- Flutter sends a bounded history in correct user/assistant order.
+- Backend rejects malformed, overlong, or oversized history before Gemini is invoked.
+- A follow-up destination can reuse a prior origin to query `RouteService`.
 - Existing in-scope and provider error behavior still passing.
