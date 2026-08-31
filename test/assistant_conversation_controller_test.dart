@@ -7,15 +7,18 @@ import 'package:timetable/features/travel_alarm/presentation/controllers/travel_
 class _CapturingChatRepository implements AssistantChatRepository {
   String? message;
   List<AssistantChatTurn> history = const [];
+  String? lang;
 
   @override
-  Future<String> ask(
+  Future<AssistantChatAnswer> ask(
     String value, {
     List<AssistantChatTurn> history = const [],
+    String? lang,
   }) async {
     message = value;
     this.history = history;
-    return 'Siap, mau ke stasiun mana?';
+    this.lang = lang;
+    return const AssistantChatAnswer(reply: 'Siap, mau ke stasiun mana?');
   }
 }
 

@@ -149,14 +149,11 @@ class _AssistantPageState extends State<AssistantPage>
     setState(() {});
   }
 
-  void _confirmRoute() {
+  void _confirmRoute(String from, String to) {
     context.go(
       Uri(
         path: '/rute',
-        queryParameters: const {
-          'from': AssistantController.demoOrigin,
-          'to': AssistantController.demoDestination,
-        },
+        queryParameters: {'from': from, 'to': to},
       ).toString(),
     );
   }
@@ -297,7 +294,10 @@ class _AssistantPageState extends State<AssistantPage>
               ),
             ),
             AssistantComposer(
-              onSubmit: _conversationController.submitText,
+              onSubmit: (text) => _conversationController.submitText(
+                text,
+                lang: Localizations.localeOf(context).languageCode,
+              ),
               onMicrophoneTap: _voiceAction,
               microphoneSemanticsLabel: _voiceSemanticsLabel(context),
             ),

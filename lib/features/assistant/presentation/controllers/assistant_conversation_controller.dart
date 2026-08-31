@@ -30,7 +30,7 @@ class AssistantConversationController extends ChangeNotifier {
       UnmodifiableListView(_items);
   bool get isSending => _isSending;
 
-  Future<void> submitText(String rawText) async {
+  Future<void> submitText(String rawText, {String? lang}) async {
     final text = rawText.trim();
     if (text.isEmpty) return;
 
@@ -44,8 +44,17 @@ class AssistantConversationController extends ChangeNotifier {
       _isSending = true;
       notifyListeners();
       try {
-        _appendAssistant(
-          await chatRepository!.ask(text, history: _historyBeforeCurrent()),
+        final answer = await chatRepository!.ask(
+          text,
+          history: _historyBeforeCurrent(),
+          lang: lang,
+        );
+        _append(
+          author: AssistantMessageAuthor.assistant,
+          kind: AssistantConversationItemKind.message,
+          text: answer.reply,
+          routeFrom: answer.routeFrom,
+          routeTo: answer.routeTo,
         );
       } on Exception {
         _appendAssistant(copy.unavailable);
@@ -190,6 +199,8 @@ class AssistantConversationController extends ChangeNotifier {
     required AssistantConversationItemKind kind,
     required String text,
     TravelAlarmState? alarmSnapshot,
+    String? routeFrom,
+    String? routeTo,
   }) {
     _items.add(
       AssistantConversationItem(
@@ -198,6 +209,8 @@ class AssistantConversationController extends ChangeNotifier {
         kind: kind,
         text: text,
         alarmSnapshot: alarmSnapshot,
+        routeFrom: routeFrom,
+        routeTo: routeTo,
       ),
     );
   }
