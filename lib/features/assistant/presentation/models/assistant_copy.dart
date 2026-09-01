@@ -15,6 +15,9 @@ class AssistantCopy {
     required this.destinationAlarmDisabled,
     required this.allAlarmsActive,
     required this.trainArrivesIn,
+    required this.voiceDestinationPrompt,
+    required this.voiceUnavailable,
+    required this.voiceNoSpeech,
   });
 
   factory AssistantCopy.fromL10n(AppLocalizations l10n) => AssistantCopy(
@@ -30,6 +33,9 @@ class AssistantCopy {
     destinationAlarmDisabled: l10n.assistantDestinationAlarmDisabled,
     allAlarmsActive: l10n.assistantAllAlarmsActive,
     trainArrivesIn: l10n.travelAlarmTrainArrivesIn,
+    voiceDestinationPrompt: l10n.assistantVoiceDestinationPrompt,
+    voiceUnavailable: l10n.assistantVoiceUnavailable,
+    voiceNoSpeech: l10n.assistantVoiceNoSpeech,
   );
 
   factory AssistantCopy.indonesian() =>
@@ -47,4 +53,7 @@ class AssistantCopy {
   final String destinationAlarmDisabled;
   final String allAlarmsActive;
   final String Function(int minutes) trainArrivesIn;
+  final String voiceDestinationPrompt;
+  final String voiceUnavailable;
+  final String voiceNoSpeech;
 }

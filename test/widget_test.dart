@@ -3,9 +3,11 @@ import 'dart:ui' show SemanticsAction, Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:timetable/core/routing/router.dart';
 import 'package:timetable/core/theme/app_colors.dart';
+import 'package:timetable/features/assistant/domain/services/assistant_voice_service.dart';
 import 'package:timetable/features/assistant/presentation/controllers/assistant_controller.dart';
 import 'package:timetable/features/assistant/presentation/controllers/assistant_conversation_controller.dart';
 import 'package:timetable/features/assistant/presentation/pages/assistant_page.dart';
@@ -23,6 +25,49 @@ void legacyTicketSimulationTest(
   String description,
   WidgetTesterCallback callback,
 ) {}
+
+class _WidgetVoiceService implements AssistantVoiceService {
+  AssistantVoiceResultCallback? _onResult;
+  final List<String> spoken = <String>[];
+  int cancelCount = 0;
+
+  @override
+  Future<bool> initialize({
+    required AssistantVoiceErrorCallback onError,
+    required VoidCallback onDone,
+  }) async => true;
+
+  @override
+  Future<void> listen({
+    required String localeId,
+    required AssistantVoiceResultCallback onResult,
+  }) async => _onResult = onResult;
+
+  @override
+  Future<void> speak(String text, String localeId) async => spoken.add(text);
+
+  @override
+  Future<void> stopListening() async {}
+
+  @override
+  Future<void> cancelListening() async => cancelCount += 1;
+
+  @override
+  Future<void> stopSpeaking() async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  void emit(String text, {bool isFinal = false}) {
+    _onResult?.call(AssistantVoiceResult(text, isFinal));
+  }
+}
+
+Future<void> _drainVoice(WidgetTester tester) async {
+  for (var index = 0; index < 8; index++) {
+    await tester.pump();
+  }
+}
 
 void main() {
   setUp(() {
@@ -765,7 +810,8 @@ void main() {
   testWidgets('Assistant page exposes accessible voice-first controls', (
     WidgetTester tester,
   ) async {
-    final controller = AssistantController();
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -794,7 +840,7 @@ void main() {
     expect(quickActionSemantics.hasAction(SemanticsAction.tap), isTrue);
 
     await tester.tap(find.byKey(const Key('assistant-microphone-button')));
-    await tester.pump();
+    await _drainVoice(tester);
     expect(
       find.bySemanticsLabel('Hentikan percakapan suara'),
       findsNWidgets(2),
@@ -823,12 +869,16 @@ void main() {
     final conversation = AssistantConversationController(
       alarmController: alarms,
     );
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(conversation.dispose);
     addTearDown(alarms.dispose);
+    addTearDown(controller.dispose);
 
     await tester.pumpWidget(
       localizedTestApp(
         home: AssistantPage(
+          controller: controller,
           alarmController: alarms,
           conversationController: conversation,
         ),
@@ -863,11 +913,8 @@ void main() {
     final conversation = AssistantConversationController(
       alarmController: alarms,
     );
-    final voice = AssistantController(
-      listeningDuration: const Duration(milliseconds: 1),
-      processingDuration: const Duration(milliseconds: 1),
-      speakingDuration: const Duration(milliseconds: 1),
-    );
+    final voiceService = _WidgetVoiceService();
+    final voice = AssistantController(voiceService: voiceService);
     addTearDown(alarms.dispose);
     addTearDown(conversation.dispose);
     addTearDown(voice.dispose);
@@ -897,19 +944,16 @@ void main() {
     );
     await tester.ensureVisible(microphoneButton);
     await tester.tap(microphoneButton);
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
+    await _drainVoice(tester);
+    voiceService.emit('Alarm berikutnya kapan?', isFinal: true);
+    await _drainVoice(tester);
 
+    expect(find.text('Alarm berikutnya kapan?'), findsNWidgets(2));
+    expect(find.text('Kereta datang 5 menit lagi'), findsNWidgets(2));
     expect(
-      find.text('Saya ingin ke Manggarai dari Setiabudi.'),
-      findsOneWidget,
+      voiceService.spoken,
+      contains('Halo, kamu mau melakukan perjalanan ke mana?'),
     );
-    expect(
-      find.text('Rute tercepat membutuhkan 7 menit. Kereta tiba 5 menit lagi.'),
-      findsOneWidget,
-    );
-    expect(find.text('Pakai rute ini'), findsOneWidget);
 
     alarms.cancelAllAlarms();
     await tester.pumpWidget(const SizedBox.shrink());
@@ -925,13 +969,18 @@ void main() {
           )
           ..completePurchase(from: 'Setiabudi', to: 'Manggarai')
           ..configureAlarms(departure: true, destination: true);
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       alarms.dispose();
     });
+    addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      localizedTestApp(home: AssistantPage(alarmController: alarms)),
+      localizedTestApp(
+        home: AssistantPage(controller: controller, alarmController: alarms),
+      ),
     );
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
@@ -940,39 +989,34 @@ void main() {
     alarms.cancelAllAlarms();
   });
 
-  testWidgets('Assistant page simulates a trip and requests confirmation', (
+  testWidgets('Assistant page captures a spoken alarm request', (
     WidgetTester tester,
   ) async {
-    final controller = AssistantController(
-      listeningDuration: const Duration(milliseconds: 1),
-      processingDuration: const Duration(milliseconds: 1),
-      speakingDuration: const Duration(milliseconds: 1),
-    );
+    final alarms = TravelAlarmController()
+      ..completePurchase(from: 'Setiabudi', to: 'Manggarai')
+      ..configureAlarms(departure: true, destination: true);
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(controller.dispose);
+    addTearDown(alarms.dispose);
 
     await tester.pumpWidget(
-      localizedTestApp(home: AssistantPage(controller: controller)),
+      localizedTestApp(
+        home: AssistantPage(controller: controller, alarmController: alarms),
+      ),
     );
 
     await tester.tap(find.byKey(const Key('assistant-microphone-button')));
-    await tester.pump();
+    await _drainVoice(tester);
     expect(find.text('Mendengarkan'), findsWidgets);
 
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
+    voice.emit('Alarm berikutnya kapan?', isFinal: true);
+    await _drainVoice(tester);
 
-    expect(
-      find.text('Saya ingin ke Manggarai dari Setiabudi.'),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Rute tercepat membutuhkan 7 menit. Kereta tiba 5 menit lagi.'),
-      findsOneWidget,
-    );
-    expect(find.text('Pakai rute ini'), findsOneWidget);
-    expect(find.text('Ulangi'), findsOneWidget);
-    expect(find.text('Batalkan'), findsOneWidget);
+    expect(find.text('Alarm berikutnya kapan?'), findsOneWidget);
+    expect(find.text('Kereta datang 5 menit lagi'), findsOneWidget);
+    expect(voice.spoken.last, 'Kereta datang 5 menit lagi');
+    alarms.cancelAllAlarms();
   });
 
   testWidgets('Assistant navigation replaces Promo and opens the new tab', (
@@ -1010,23 +1054,53 @@ void main() {
   testWidgets('Assistant confirmation opens the requested Manggarai route', (
     WidgetTester tester,
   ) async {
-    appRouter.go('/asisten');
-    await tester.pumpWidget(const MyApp());
+    final alarms = TravelAlarmController();
+    final conversation = AssistantConversationController(
+      alarmController: alarms,
+    );
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
+    late final GoRouter router;
+    router = GoRouter(
+      initialLocation: '/asisten',
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/asisten',
+          builder: (context, state) => AssistantPage(
+            controller: controller,
+            alarmController: alarms,
+            conversationController: conversation,
+          ),
+        ),
+        GoRoute(
+          path: '/rute',
+          builder: (context, state) => const Scaffold(body: Text('Rute')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    addTearDown(controller.dispose);
+    addTearDown(conversation.dispose);
+    addTearDown(alarms.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('id'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    conversation.addVoiceExchange(
+      transcript: 'Saya ingin ke Manggarai dari Setiabudi.',
+      response: 'Rute tercepat membutuhkan 7 menit.',
+    );
     await tester.pumpAndSettle();
 
-    final microphoneButton = find.byKey(
-      const Key('assistant-microphone-button'),
-    );
-    await tester.ensureVisible(microphoneButton);
-    await tester.tap(microphoneButton);
-    await tester.pump(const Duration(milliseconds: 900));
-    await tester.pump(const Duration(milliseconds: 750));
-    await tester.pump(const Duration(milliseconds: 700));
     await tester.ensureVisible(find.text('Pakai rute ini'));
     await tester.tap(find.text('Pakai rute ini'));
     await tester.pumpAndSettle();
 
-    final uri = appRouter.routeInformationProvider.value.uri;
+    final uri = router.routeInformationProvider.value.uri;
     expect(uri.path, '/rute');
     expect(uri.queryParameters['from'], 'Setiabudi');
     expect(uri.queryParameters['to'], 'Manggarai');
@@ -1081,18 +1155,15 @@ void main() {
   testWidgets('Assistant page cancels an injected controller when disposed', (
     WidgetTester tester,
   ) async {
-    final controller = AssistantController(
-      listeningDuration: const Duration(milliseconds: 1),
-      processingDuration: const Duration(milliseconds: 1),
-      speakingDuration: const Duration(milliseconds: 1),
-    );
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       localizedTestApp(home: AssistantPage(controller: controller)),
     );
 
-    controller.startConversation();
-    await tester.pump();
+    await controller.startConversation();
+    await _drainVoice(tester);
     expect(controller.state, AssistantInteractionState.listening);
 
     await tester.pumpWidget(localizedTestApp(home: const SizedBox.shrink()));
@@ -1101,6 +1172,7 @@ void main() {
     expect(controller.state, AssistantInteractionState.ready);
     expect(controller.userTranscript, isNull);
     expect(controller.assistantResponse, isNull);
+    expect(voice.cancelCount, greaterThan(0));
   });
 
   testWidgets('Assistant page supports 200 percent text scaling', (
@@ -1110,11 +1182,8 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final controller = AssistantController(
-      listeningDuration: const Duration(milliseconds: 1),
-      processingDuration: const Duration(milliseconds: 1),
-      speakingDuration: const Duration(milliseconds: 1),
-    );
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -1135,11 +1204,9 @@ void main() {
     );
     await tester.ensureVisible(microphoneButton);
     await tester.tap(microphoneButton);
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
-    await tester.pump(const Duration(milliseconds: 2));
+    await _drainVoice(tester);
 
-    expect(find.text('Pakai rute ini'), findsOneWidget);
+    expect(find.text('Mendengarkan'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
@@ -1150,7 +1217,12 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(localizedTestApp(home: const AssistantPage()));
+    final voice = _WidgetVoiceService();
+    final controller = AssistantController(voiceService: voice);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      localizedTestApp(home: AssistantPage(controller: controller)),
+    );
 
     final field = find.byKey(const Key('assistant-message-field'));
     await tester.tap(field);

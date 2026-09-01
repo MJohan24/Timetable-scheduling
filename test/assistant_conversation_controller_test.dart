@@ -175,13 +175,28 @@ void main() {
     await chat.submitText('Tujuannya ke Jakarta Kota');
 
     expect(repository.message, 'Tujuannya ke Jakarta Kota');
-    expect(
-      repository.history.map((turn) => (turn.role, turn.text)),
-      [
-        (AssistantChatRole.user, 'Aku mau naik dari Pondok Ranji'),
-        (AssistantChatRole.assistant, 'Siap, mau ke stasiun mana?'),
-      ],
+    expect(repository.history.map((turn) => (turn.role, turn.text)), [
+      (AssistantChatRole.user, 'Aku mau naik dari Pondok Ranji'),
+      (AssistantChatRole.assistant, 'Siap, mau ke stasiun mana?'),
+    ]);
+  });
+
+  test('voice submission returns the assistant reply for TTS', () async {
+    final alarms = TravelAlarmController();
+    final repository = _CapturingChatRepository();
+    final chat = AssistantConversationController(
+      alarmController: alarms,
+      chatRepository: repository,
     );
+    addTearDown(chat.dispose);
+    addTearDown(alarms.dispose);
+
+    final reply = await chat.submitText('Saya mau ke Bogor', lang: 'id');
+
+    expect(reply, 'Siap, mau ke stasiun mana?');
+    expect(repository.message, 'Saya mau ke Bogor');
+    expect(repository.lang, 'id');
+    expect(chat.items.last.text, reply);
   });
 
   test('typed chat bounds temporary context to six prior turns', () async {

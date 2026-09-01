@@ -30,9 +30,9 @@ class AssistantConversationController extends ChangeNotifier {
       UnmodifiableListView(_items);
   bool get isSending => _isSending;
 
-  Future<void> submitText(String rawText, {String? lang}) async {
+  Future<String?> submitText(String rawText, {String? lang}) async {
     final text = rawText.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) return null;
 
     _append(
       author: AssistantMessageAuthor.user,
@@ -56,18 +56,20 @@ class AssistantConversationController extends ChangeNotifier {
           routeFrom: answer.routeFrom,
           routeTo: answer.routeTo,
         );
+        return answer.reply;
       } on Exception {
         _appendAssistant(copy.unavailable);
+        return copy.unavailable;
       } finally {
         _isSending = false;
+        notifyListeners();
       }
-      notifyListeners();
-      return;
     }
     if (!handled) {
       _appendAssistant(copy.unknownCommand);
     }
     notifyListeners();
+    return _items.last.text;
   }
 
   void addVoiceExchange({

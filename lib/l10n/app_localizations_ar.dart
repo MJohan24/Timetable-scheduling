@@ -1832,6 +1832,16 @@ class AppLocalizationsAr extends AppLocalizations {
       'المساعد غير متاح حاليًا. حاول مرة أخرى أو راجع معلومات المحطة الرسمية.';
 
   @override
+  String get assistantVoiceDestinationPrompt => 'مرحبًا، إلى أين تريد السفر؟';
+
+  @override
+  String get assistantVoiceUnavailable =>
+      'الإدخال الصوتي غير متاح. تحقق من إذن الميكروفون وحاول مرة أخرى.';
+
+  @override
+  String get assistantVoiceNoSpeech => 'لم أسمع وجهتك. يرجى قولها مرة أخرى.';
+
+  @override
   String get assistantUnknownCommand =>
       'لم أفهم هذا الأمر. جرّب: «متى التنبيه التالي؟» أو «فعّل كل تنبيهات تذاكري».';
 

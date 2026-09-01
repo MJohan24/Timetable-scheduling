@@ -1780,6 +1780,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get assistantUnavailable => '助手暂时不可用。请重试或查看车站官方信息。';
 
   @override
+  String get assistantVoiceDestinationPrompt => '你好，你想去哪里？';
+
+  @override
+  String get assistantVoiceUnavailable => '语音输入不可用。请检查麦克风权限后重试。';
+
+  @override
+  String get assistantVoiceNoSpeech => '我没有听到你的目的地。请再说一次。';
+
+  @override
   String get assistantUnknownCommand =>
       '我不明白该指令。请尝试：“下一个提醒是什么时候？”或“启用我车票的所有提醒”。';
 
@@ -4083,6 +4092,15 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get assistantUnavailable => '助手暂时不可用。请重试或查看车站官方信息。';
+
+  @override
+  String get assistantVoiceDestinationPrompt => '你好，你想去哪里？';
+
+  @override
+  String get assistantVoiceUnavailable => '语音输入不可用。请检查麦克风权限后重试。';
+
+  @override
+  String get assistantVoiceNoSpeech => '我没有听到你的目的地。请再说一次。';
 
   @override
   String get assistantUnknownCommand =>

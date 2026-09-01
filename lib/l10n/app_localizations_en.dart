@@ -1843,6 +1843,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'The assistant is unavailable. Try again or check official station information.';
 
   @override
+  String get assistantVoiceDestinationPrompt =>
+      'Hello, where would you like to travel?';
+
+  @override
+  String get assistantVoiceUnavailable =>
+      'Voice input is unavailable. Check microphone permission and try again.';
+
+  @override
+  String get assistantVoiceNoSpeech =>
+      'I didn\'t hear your destination. Please say it again.';
+
+  @override
   String get assistantUnknownCommand =>
       'I couldn\'t understand that command. Try: “When is my next alarm?” or “Enable all my ticket alarms.”';
 

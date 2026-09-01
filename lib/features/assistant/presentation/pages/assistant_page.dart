@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,7 +42,6 @@ class _AssistantPageState extends State<AssistantPage>
   late final AssistantConversationController _conversationController;
   late final bool _ownsConversationController;
   final ScrollController _scrollController = ScrollController();
-  int _lastConsumedExchangeId = 0;
   int _lastConversationItemCount = 0;
 
   @override
@@ -57,8 +58,8 @@ class _AssistantPageState extends State<AssistantPage>
           alarmController: _alarmController,
           chatRepository: AssistantChatRepositoryImpl(),
         );
-    _lastConsumedExchangeId = _controller.completedExchangeId;
     _lastConversationItemCount = _conversationController.items.length;
+    _controller.setTranscriptSubmitter(_submitVoiceTranscript);
     WidgetsBinding.instance.addObserver(this);
     _controller.addListener(_handleVoiceControllerChange);
     _conversationController.addListener(_handleConversationChange);
@@ -71,12 +72,14 @@ class _AssistantPageState extends State<AssistantPage>
     _controller.removeListener(_handleVoiceControllerChange);
     _conversationController.removeListener(_handleConversationChange);
     _alarmController.removeListener(_handleAlarmChange);
-    _controller.cancelConversation();
-    if (_controller.wakeWordEnabled) {
-      _controller.toggleWakeWord(false);
-    }
+    _controller.clearTranscriptSubmitter();
     if (_ownsController) {
       _controller.dispose();
+    } else {
+      unawaited(() async {
+        await _controller.toggleWakeWord(false);
+        await _controller.pauseForLifecycle();
+      }());
     }
     if (_ownsConversationController) {
       _conversationController.dispose();
@@ -93,22 +96,24 @@ class _AssistantPageState extends State<AssistantPage>
     super.didChangeDependencies();
     final l10n = AppLocalizations.of(context)!;
     final copy = AssistantCopy.fromL10n(l10n);
-    _controller.configure(copy);
+    _controller.configure(
+      copy,
+      languageCode: Localizations.localeOf(context).languageCode,
+    );
     _conversationController.configure(copy);
     _alarmController.configure(TravelAlarmCopy.fromL10n(l10n));
   }
 
   void _handleVoiceControllerChange() {
-    if (_controller.completedExchangeId > _lastConsumedExchangeId &&
-        _controller.userTranscript != null &&
-        _controller.assistantResponse != null) {
-      _lastConsumedExchangeId = _controller.completedExchangeId;
-      _conversationController.addVoiceExchange(
-        transcript: _controller.userTranscript!,
-        response: _controller.assistantResponse!,
-      );
-    }
     if (mounted) setState(() {});
+  }
+
+  Future<String?> _submitVoiceTranscript(String transcript) {
+    if (!mounted) return Future<String?>.value();
+    return _conversationController.submitText(
+      transcript,
+      lang: Localizations.localeOf(context).languageCode,
+    );
   }
 
   void _handleConversationChange() {
@@ -128,6 +133,20 @@ class _AssistantPageState extends State<AssistantPage>
   @override
   void didChangeMetrics() {
     _scheduleScrollToLatest(onlyWhenNearBottom: true);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_controller.resumeFromLifecycle());
+      return;
+    }
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      unawaited(_controller.pauseForLifecycle());
+    }
   }
 
   void _scheduleScrollToLatest({bool onlyWhenNearBottom = false}) {
@@ -151,10 +170,7 @@ class _AssistantPageState extends State<AssistantPage>
 
   void _confirmRoute(String from, String to) {
     context.go(
-      Uri(
-        path: '/rute',
-        queryParameters: {'from': from, 'to': to},
-      ).toString(),
+      Uri(path: '/rute', queryParameters: {'from': from, 'to': to}).toString(),
     );
   }
 
@@ -384,7 +400,7 @@ class _AssistantPageState extends State<AssistantPage>
       label: l10n.wakeWordMode,
       value: enabled ? l10n.active : l10n.inactive,
       toggled: enabled,
-      onTap: () => _controller.toggleWakeWord(!enabled),
+      onTap: () => unawaited(_controller.toggleWakeWord(!enabled)),
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
         decoration: BoxDecoration(
@@ -436,7 +452,8 @@ class _AssistantPageState extends State<AssistantPage>
               child: Switch(
                 key: const Key('wake-word-switch'),
                 value: enabled,
-                onChanged: _controller.toggleWakeWord,
+                onChanged: (value) =>
+                    unawaited(_controller.toggleWakeWord(value)),
                 activeThumbColor: AppColors.statusGreen,
               ),
             ),

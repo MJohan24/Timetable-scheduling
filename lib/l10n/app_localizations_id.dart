@@ -1852,6 +1852,18 @@ class AppLocalizationsId extends AppLocalizations {
       'Asisten sedang tidak tersedia. Coba lagi atau cek informasi resmi stasiun.';
 
   @override
+  String get assistantVoiceDestinationPrompt =>
+      'Halo, kamu mau melakukan perjalanan ke mana?';
+
+  @override
+  String get assistantVoiceUnavailable =>
+      'Fitur suara tidak tersedia. Periksa izin mikrofon lalu coba lagi.';
+
+  @override
+  String get assistantVoiceNoSpeech =>
+      'Saya belum mendengar tujuanmu. Coba ucapkan lagi.';
+
+  @override
   String get assistantUnknownCommand =>
       'Saya belum memahami perintah itu. Coba: “Alarm berikutnya kapan?” atau “Aktifkan semua alarm tiket saya”.';
 

@@ -3433,6 +3433,24 @@ abstract class AppLocalizations {
   /// **'Asisten sedang tidak tersedia. Coba lagi atau cek informasi resmi stasiun.'**
   String get assistantUnavailable;
 
+  /// No description provided for @assistantVoiceDestinationPrompt.
+  ///
+  /// In id, this message translates to:
+  /// **'Halo, kamu mau melakukan perjalanan ke mana?'**
+  String get assistantVoiceDestinationPrompt;
+
+  /// No description provided for @assistantVoiceUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Fitur suara tidak tersedia. Periksa izin mikrofon lalu coba lagi.'**
+  String get assistantVoiceUnavailable;
+
+  /// No description provided for @assistantVoiceNoSpeech.
+  ///
+  /// In id, this message translates to:
+  /// **'Saya belum mendengar tujuanmu. Coba ucapkan lagi.'**
+  String get assistantVoiceNoSpeech;
+
   /// No description provided for @assistantUnknownCommand.
   ///
   /// In id, this message translates to:
