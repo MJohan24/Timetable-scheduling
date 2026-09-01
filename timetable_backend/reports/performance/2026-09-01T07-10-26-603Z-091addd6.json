@@ -1,0 +1,455 @@
+{
+  "startedAt": "2026-09-01T07:10:26.603Z",
+  "finishedAt": "2026-09-01T07:11:10.717Z",
+  "stoppedBy": "completed",
+  "node": "v25.8.2",
+  "platform": "win32",
+  "concurrency": 1,
+  "base": "https://timetable-scheduling-api-mjohan.onrender.com/api/v1",
+  "rounds": 5,
+  "intervalMs": 1000,
+  "thresholdMs": 200,
+  "timeoutMs": 15000,
+  "scope": "HTTP request through body read and JSON parse; not Flutter UI or device rendering. First requests are retained; not guaranteed cold starts.",
+  "metricsMissing": 0,
+  "summary": [
+    {
+      "scenario": "station-list",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 2,
+      "firstMs": 455.435,
+      "avgMs": 198.105,
+      "p95Ms": 455.435,
+      "maxMs": 455.435,
+      "pass": false
+    },
+    {
+      "scenario": "station-search",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 0,
+      "firstMs": 117.252,
+      "avgMs": 110.83,
+      "p95Ms": 129.138,
+      "maxMs": 129.138,
+      "pass": true
+    },
+    {
+      "scenario": "route-direct",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 5,
+      "firstMs": 564.528,
+      "avgMs": 418.398,
+      "p95Ms": 564.528,
+      "maxMs": 564.528,
+      "pass": false
+    },
+    {
+      "scenario": "route-interchange",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 5,
+      "firstMs": 338.936,
+      "avgMs": 387.415,
+      "p95Ms": 511.772,
+      "maxMs": 511.772,
+      "pass": false
+    },
+    {
+      "scenario": "route-walking",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 5,
+      "firstMs": 424.32,
+      "avgMs": 504.59,
+      "p95Ms": 826.417,
+      "maxMs": 826.417,
+      "pass": false
+    },
+    {
+      "scenario": "schedule-krl",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 5,
+      "firstMs": 1961.457,
+      "avgMs": 1156.579,
+      "p95Ms": 1961.457,
+      "maxMs": 1961.457,
+      "pass": false
+    }
+  ],
+  "samples": [
+    {
+      "round": 1,
+      "scenario": "station-list",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 117.234,
+        "handler": 154.776
+      },
+      "elapsedMs": 455.4349
+    },
+    {
+      "round": 1,
+      "scenario": "station-search",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 66.307,
+        "handler": 67.863
+      },
+      "elapsedMs": 117.2521999999999
+    },
+    {
+      "round": 1,
+      "scenario": "route-direct",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 157.416,
+        "graph_load": 343.341,
+        "dijkstra": 2.062,
+        "handler": 513.759
+      },
+      "elapsedMs": 564.5278000000003
+    },
+    {
+      "round": 1,
+      "scenario": "route-interchange",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 9.201,
+        "graph_load": 223.665,
+        "dijkstra": 0.187,
+        "handler": 234.523
+      },
+      "elapsedMs": 338.9359999999997
+    },
+    {
+      "round": 1,
+      "scenario": "route-walking",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 8.455,
+        "graph_load": 266.649,
+        "dijkstra": 0.25,
+        "handler": 276.275
+      },
+      "elapsedMs": 424.3200999999999
+    },
+    {
+      "round": 1,
+      "scenario": "schedule-krl",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 19.894,
+        "schedule_query": 725.148,
+        "schedule_format": 1107.471,
+        "handler": 1854.207
+      },
+      "elapsedMs": 1961.4570999999996
+    },
+    {
+      "round": 2,
+      "scenario": "station-list",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 62.996,
+        "handler": 63.889
+      },
+      "elapsedMs": 205.91249999999854
+    },
+    {
+      "round": 2,
+      "scenario": "station-search",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 48.595,
+        "handler": 49.365
+      },
+      "elapsedMs": 129.13820000000123
+    },
+    {
+      "round": 2,
+      "scenario": "route-direct",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 16.279,
+        "graph_load": 298.613,
+        "dijkstra": 0.402,
+        "handler": 316.344
+      },
+      "elapsedMs": 426.59439999999995
+    },
+    {
+      "round": 2,
+      "scenario": "route-interchange",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 9.401,
+        "graph_load": 385.307,
+        "dijkstra": 0.199,
+        "handler": 395.982
+      },
+      "elapsedMs": 511.7717999999986
+    },
+    {
+      "round": 2,
+      "scenario": "route-walking",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 30.6,
+        "graph_load": 557.87,
+        "dijkstra": 0.28,
+        "handler": 590.13
+      },
+      "elapsedMs": 826.4171999999999
+    },
+    {
+      "round": 2,
+      "scenario": "schedule-krl",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 14.156,
+        "schedule_query": 238.178,
+        "schedule_format": 606.2,
+        "handler": 859.444
+      },
+      "elapsedMs": 1084.3655999999974
+    },
+    {
+      "round": 3,
+      "scenario": "station-list",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 55.337,
+        "handler": 56.149
+      },
+      "elapsedMs": 115.1147000000019
+    },
+    {
+      "round": 3,
+      "scenario": "station-search",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 39.687,
+        "handler": 40.429
+      },
+      "elapsedMs": 94.40819999999803
+    },
+    {
+      "round": 3,
+      "scenario": "route-direct",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 17.589,
+        "graph_load": 215.319,
+        "dijkstra": 0.427,
+        "handler": 234.347
+      },
+      "elapsedMs": 372.4445000000014
+    },
+    {
+      "round": 3,
+      "scenario": "route-interchange",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 11.304,
+        "graph_load": 240.166,
+        "dijkstra": 0.194,
+        "handler": 252.696
+      },
+      "elapsedMs": 486.8205999999991
+    },
+    {
+      "round": 3,
+      "scenario": "route-walking",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 11.919,
+        "graph_load": 242.287,
+        "dijkstra": 0.348,
+        "handler": 255.558
+      },
+      "elapsedMs": 535.0411999999997
+    },
+    {
+      "round": 3,
+      "scenario": "schedule-krl",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 12.257,
+        "schedule_query": 200.251,
+        "schedule_format": 601.892,
+        "handler": 815.215
+      },
+      "elapsedMs": 956.8744999999981
+    },
+    {
+      "round": 4,
+      "scenario": "station-list",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 58.788,
+        "handler": 59.709
+      },
+      "elapsedMs": 104.85080000000016
+    },
+    {
+      "round": 4,
+      "scenario": "station-search",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 23.07,
+        "handler": 23.644
+      },
+      "elapsedMs": 121.95830000000205
+    },
+    {
+      "round": 4,
+      "scenario": "route-direct",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 8.04,
+        "graph_load": 208.063,
+        "dijkstra": 0.201,
+        "handler": 217.274
+      },
+      "elapsedMs": 269.0847999999969
+    },
+    {
+      "round": 4,
+      "scenario": "route-interchange",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 8.138,
+        "graph_load": 243.195,
+        "dijkstra": 0.127,
+        "handler": 252.365
+      },
+      "elapsedMs": 293.1170999999995
+    },
+    {
+      "round": 4,
+      "scenario": "route-walking",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 10.034,
+        "graph_load": 229.453,
+        "dijkstra": 0.264,
+        "handler": 240.727
+      },
+      "elapsedMs": 412.627199999999
+    },
+    {
+      "round": 4,
+      "scenario": "schedule-krl",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 7.856,
+        "schedule_query": 217.391,
+        "schedule_format": 589.018,
+        "handler": 815.102
+      },
+      "elapsedMs": 1044.9505999999965
+    },
+    {
+      "round": 5,
+      "scenario": "station-list",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 63.935,
+        "handler": 64.987
+      },
+      "elapsedMs": 109.20990000000165
+    },
+    {
+      "round": 5,
+      "scenario": "station-search",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 44.32,
+        "handler": 45.084
+      },
+      "elapsedMs": 91.39099999999598
+    },
+    {
+      "round": 5,
+      "scenario": "route-direct",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 14.152,
+        "graph_load": 333.43,
+        "dijkstra": 0.293,
+        "handler": 351.616
+      },
+      "elapsedMs": 459.33660000000236
+    },
+    {
+      "round": 5,
+      "scenario": "route-interchange",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 8.233,
+        "graph_load": 161.381,
+        "dijkstra": 0.699,
+        "handler": 171.294
+      },
+      "elapsedMs": 306.4293000000034
+    },
+    {
+      "round": 5,
+      "scenario": "route-walking",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 8.432,
+        "graph_load": 141.62,
+        "dijkstra": 0.098,
+        "handler": 150.869
+      },
+      "elapsedMs": 324.54649999999674
+    },
+    {
+      "round": 5,
+      "scenario": "schedule-krl",
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 11.078,
+        "schedule_query": 139.126,
+        "schedule_format": 481.918,
+        "handler": 632.93
+      },
+      "elapsedMs": 735.248400000004
+    }
+  ]
+}
