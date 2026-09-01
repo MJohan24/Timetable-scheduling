@@ -157,3 +157,57 @@ Semua 36 request berhasil, memuat data, dan berada di bawah 200 ms pada sampel
 lokal ini. Hasil tersebut membuktikan jalur komputasi backend lokal, tetapi belum
 membuktikan target di Render karena latensi jaringan dan perilaku instance Render
 harus diukur terpisah setelah commit ini dideploy.
+
+## Hasil Render setelah optimasi: 1 September 2026 WIB
+
+Commit backend `efb1a3ebd5da37a19a0e88ed41cd3c4f98e4afc3` dideploy ke
+Render Free region Singapore dan memakai Neon region Singapore. Penguji memakai
+Node v25.8.2 pada Windows dari zona Asia/Jakarta. `PERFORMANCE_METRICS=true`
+hanya diaktifkan selama dua batch berikut, lalu dikembalikan ke `false`.
+
+Batch pertama dijalankan pukul 15:28 WIB setelah deployment dinyatakan siap.
+Service sudah menerima pemeriksaan readiness, sehingga hasil ini dicatat sebagai
+akses pertama pascadeploy dan **bukan** diklaim sebagai cold start. Identitas batch
+UTC: `2026-09-01T08-28-00-342Z-4235343d`.
+
+| Skenario | Sampel | Rata-rata HTTP (ms) | Maksimum / p95 (ms) | >= 200 ms |
+|---|---:|---:|---:|---:|
+| Daftar stasiun | 5 | 158.972 | 250.803 | 2 |
+| Cari stasiun | 5 | 89.993 | 113.044 | 0 |
+| Rute langsung | 5 | 96.478 | 128.633 | 0 |
+| Rute pindah jalur | 5 | 162.203 | 476.330 | 1 |
+| Rute berjalan kaki | 5 | 84.344 | 139.812 | 0 |
+| Jadwal KRL | 5 | 87.594 | 120.024 | 0 |
+
+Ringkasan batch pertama: 30 request, rata-rata keseluruhan 113.264 ms, p95
+250.803 ms, maksimum 476.330 ms, 0 error, dan 3 request mencapai atau melampaui
+200 ms. Handler backend maksimum 21.790 ms dan Dijkstra maksimum 1.908 ms.
+
+Batch kedua dijalankan pukul 15:28-15:29 WIB ketika service sudah aktif, sepuluh
+putaran dan 60 request. Identitas batch UTC:
+`2026-09-01T08-28-48-762Z-376da9c5`.
+
+| Skenario | Sampel | Rata-rata HTTP (ms) | Maksimum / p95 (ms) | >= 200 ms |
+|---|---:|---:|---:|---:|
+| Daftar stasiun | 10 | 100.323 | 158.447 | 0 |
+| Cari stasiun | 10 | 76.780 | 114.963 | 0 |
+| Rute langsung | 10 | 88.938 | 160.861 | 0 |
+| Rute pindah jalur | 10 | 131.107 | 629.309 | 1 |
+| Rute berjalan kaki | 10 | 102.222 | 154.802 | 0 |
+| Jadwal KRL | 10 | 99.892 | 177.224 | 0 |
+
+Ringkasan batch aktif: 60 request, rata-rata keseluruhan 99.877 ms, p95
+158.447 ms, maksimum 629.309 ms, 0 error, dan 1 request mencapai atau melampaui
+200 ms. Handler backend maksimum 8.355 ms dan Dijkstra maksimum 1.222 ms.
+Request 629.309 ms tersebut mempunyai handler 1.354 ms dan Dijkstra 0.147 ms;
+selisihnya berada di luar fase handler yang diukur server, misalnya transport,
+proxy, antrean platform, dan pengiriman body.
+
+Kesimpulan jujur: **komputasi backend memenuhi 200 ms pada seluruh 90 sampel,
+tetapi respons HTTP publik Render belum memenuhi syarat bahwa setiap request
+harus di bawah 200 ms**. Pada batch aktif 59 dari 60 request memenuhi batas,
+namun satu lonjakan jaringan/platform tetap menggagalkan kriteria ketat. Render
+Free juga dapat menidurkan service setelah tidak aktif dan memperlambat akses
+berikutnya. Untuk demonstrasi berulang, gunakan mode `--continuous` yang dibatasi
+rate limit; jangan menggantinya dengan loop rapat yang justru membebani service
+dan mengubah hasil pengukuran.

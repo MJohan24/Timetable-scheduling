@@ -1,0 +1,600 @@
+{
+  "startedAt": "2026-09-01T08:28:00.342Z",
+  "finishedAt": "2026-09-01T08:28:34.032Z",
+  "stoppedBy": "completed",
+  "node": "v25.8.2",
+  "platform": "win32",
+  "concurrency": 1,
+  "base": "https://timetable-scheduling-api-mjohan.onrender.com/api/v1",
+  "rounds": 5,
+  "intervalMs": 1000,
+  "thresholdMs": 200,
+  "timeoutMs": 15000,
+  "scope": "HTTP request through body read and JSON parse; not Flutter UI or device rendering. First requests are retained; not guaranteed cold starts.",
+  "metricsMissing": 0,
+  "summary": [
+    {
+      "scenario": "station-list",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 2,
+      "firstMs": 250.803,
+      "avgMs": 158.972,
+      "p95Ms": 250.803,
+      "maxMs": 250.803,
+      "pass": false
+    },
+    {
+      "scenario": "station-search",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 0,
+      "firstMs": 50.526,
+      "avgMs": 89.993,
+      "p95Ms": 113.044,
+      "maxMs": 113.044,
+      "pass": true
+    },
+    {
+      "scenario": "route-direct",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 0,
+      "firstMs": 128.633,
+      "avgMs": 96.478,
+      "p95Ms": 128.633,
+      "maxMs": 128.633,
+      "pass": true
+    },
+    {
+      "scenario": "route-interchange",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 1,
+      "firstMs": 110.846,
+      "avgMs": 162.203,
+      "p95Ms": 476.33,
+      "maxMs": 476.33,
+      "pass": false
+    },
+    {
+      "scenario": "route-walking",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 0,
+      "firstMs": 106.994,
+      "avgMs": 84.344,
+      "p95Ms": 139.812,
+      "maxMs": 139.812,
+      "pass": true
+    },
+    {
+      "scenario": "schedule-krl",
+      "attempts": 5,
+      "errors": 0,
+      "atOrAboveTarget": 0,
+      "firstMs": 114.201,
+      "avgMs": 87.594,
+      "p95Ms": 120.024,
+      "maxMs": 120.024,
+      "pass": true
+    }
+  ],
+  "samples": [
+    {
+      "round": 1,
+      "scenario": "station-list",
+      "target": "/stations?page=1&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.958,
+        "handler": 11.916
+      },
+      "elapsedMs": 250.80290000000002
+    },
+    {
+      "round": 1,
+      "scenario": "station-search",
+      "target": "/stations/search?q=mang&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.583,
+        "handler": 2.066
+      },
+      "elapsedMs": 50.52599999999984
+    },
+    {
+      "round": 1,
+      "scenario": "route-direct",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "bogor",
+        "to": "jakarta-kota",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.248,
+        "graph_load": 0.008,
+        "dijkstra": 1.908,
+        "route_format": 0.238,
+        "handler": 21.79
+      },
+      "elapsedMs": 128.6331
+    },
+    {
+      "round": 1,
+      "scenario": "route-interchange",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "cikini",
+        "to": "bni-city",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.136,
+        "graph_load": 0.005,
+        "dijkstra": 0.161,
+        "route_format": 0.059,
+        "handler": 1.714
+      },
+      "elapsedMs": 110.84619999999995
+    },
+    {
+      "round": 1,
+      "scenario": "route-walking",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "cikoko",
+        "to": "tebet",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.309,
+        "graph_load": 0.007,
+        "dijkstra": 0.259,
+        "route_format": 0.05,
+        "handler": 2.005
+      },
+      "elapsedMs": 106.9943000000003
+    },
+    {
+      "round": 1,
+      "scenario": "schedule-krl",
+      "target": "/schedules?station=Manggarai&trainType=KRL&isWeekend=false&page=1&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 0.186,
+        "schedule_query": 0.345,
+        "handler": 2.605
+      },
+      "elapsedMs": 114.20079999999962
+    },
+    {
+      "round": 2,
+      "scenario": "station-list",
+      "target": "/stations?page=2&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.379,
+        "handler": 1.137
+      },
+      "elapsedMs": 235.21870000000035
+    },
+    {
+      "round": 2,
+      "scenario": "station-search",
+      "target": "/stations/search?q=bog&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.338,
+        "handler": 1.239
+      },
+      "elapsedMs": 101.2432000000008
+    },
+    {
+      "round": 2,
+      "scenario": "route-direct",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "depok",
+        "to": "jayakarta",
+        "passengerCount": 2,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.461,
+        "graph_load": 0.009,
+        "dijkstra": 0.359,
+        "route_format": 0.138,
+        "handler": 2.579
+      },
+      "elapsedMs": 118.13639999999941
+    },
+    {
+      "round": 2,
+      "scenario": "route-interchange",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "bogor",
+        "to": "tangerang",
+        "passengerCount": 2,
+        "preference": "MIN_TRANSFERS"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.249,
+        "graph_load": 0.005,
+        "dijkstra": 0.594,
+        "route_format": 0.163,
+        "handler": 2.265
+      },
+      "elapsedMs": 61.52950000000055
+    },
+    {
+      "round": 2,
+      "scenario": "route-walking",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "dukuh-atas",
+        "to": "cawang",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.172,
+        "graph_load": 0.009,
+        "dijkstra": 0.161,
+        "route_format": 0.051,
+        "handler": 1.432
+      },
+      "elapsedMs": 82.74259999999958
+    },
+    {
+      "round": 2,
+      "scenario": "schedule-krl",
+      "target": "/schedules?station=Bogor&trainType=KRL&isWeekend=false&departureFrom=05%3A00&page=1&limit=30",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 0.076,
+        "schedule_query": 0.198,
+        "handler": 1.767
+      },
+      "elapsedMs": 113.36290000000008
+    },
+    {
+      "round": 3,
+      "scenario": "station-list",
+      "target": "/stations?page=3&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.495,
+        "handler": 1.633
+      },
+      "elapsedMs": 101.52529999999933
+    },
+    {
+      "round": 3,
+      "scenario": "station-search",
+      "target": "/stations/search?q=cik&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.373,
+        "handler": 1.359
+      },
+      "elapsedMs": 80.59740000000056
+    },
+    {
+      "round": 3,
+      "scenario": "route-direct",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "manggarai",
+        "to": "bogor",
+        "passengerCount": 1,
+        "preference": "MIN_TRANSFERS"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.737,
+        "graph_load": 0.016,
+        "dijkstra": 0.371,
+        "route_format": 0.102,
+        "handler": 2.999
+      },
+      "elapsedMs": 73.81289999999899
+    },
+    {
+      "round": 3,
+      "scenario": "route-interchange",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "manggarai",
+        "to": "rangkasbitung",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.234,
+        "graph_load": 0.006,
+        "dijkstra": 0.445,
+        "route_format": 0.112,
+        "handler": 1.901
+      },
+      "elapsedMs": 80.80429999999978
+    },
+    {
+      "round": 3,
+      "scenario": "route-walking",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "cikoko",
+        "to": "manggarai",
+        "passengerCount": 2,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.207,
+        "graph_load": 0.005,
+        "dijkstra": 0.154,
+        "route_format": 0.095,
+        "handler": 1.729
+      },
+      "elapsedMs": 46.26820000000225
+    },
+    {
+      "round": 3,
+      "scenario": "schedule-krl",
+      "target": "/schedules?station=Tanah%20Abang&trainType=KRL&isWeekend=false&departureTo=12%3A00&page=2&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 0.642,
+        "schedule_query": 0.167,
+        "handler": 1.958
+      },
+      "elapsedMs": 47.402900000000955
+    },
+    {
+      "round": 4,
+      "scenario": "station-list",
+      "target": "/stations?page=1&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.34,
+        "handler": 1.013
+      },
+      "elapsedMs": 84.45360000000073
+    },
+    {
+      "round": 4,
+      "scenario": "station-search",
+      "target": "/stations/search?q=mang&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.397,
+        "handler": 2.382
+      },
+      "elapsedMs": 104.55639999999767
+    },
+    {
+      "round": 4,
+      "scenario": "route-direct",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "bogor",
+        "to": "jakarta-kota",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.181,
+        "graph_load": 0.007,
+        "dijkstra": 0.329,
+        "route_format": 0.095,
+        "handler": 2.034
+      },
+      "elapsedMs": 114.16290000000299
+    },
+    {
+      "round": 4,
+      "scenario": "route-interchange",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "cikini",
+        "to": "bni-city",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.127,
+        "graph_load": 0.003,
+        "dijkstra": 0.226,
+        "route_format": 0.046,
+        "handler": 1.495
+      },
+      "elapsedMs": 81.50380000000223
+    },
+    {
+      "round": 4,
+      "scenario": "route-walking",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "cikoko",
+        "to": "tebet",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.234,
+        "graph_load": 0.006,
+        "dijkstra": 0.223,
+        "route_format": 0.034,
+        "handler": 1.498
+      },
+      "elapsedMs": 139.81230000000141
+    },
+    {
+      "round": 4,
+      "scenario": "schedule-krl",
+      "target": "/schedules?station=Manggarai&trainType=KRL&isWeekend=false&page=1&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 0.171,
+        "schedule_query": 0.177,
+        "handler": 1.311
+      },
+      "elapsedMs": 120.02369999999792
+    },
+    {
+      "round": 5,
+      "scenario": "station-list",
+      "target": "/stations?page=2&limit=40",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.46,
+        "handler": 10.257
+      },
+      "elapsedMs": 122.85729999999967
+    },
+    {
+      "round": 5,
+      "scenario": "station-search",
+      "target": "/stations/search?q=bog&limit=20",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_query": 0.431,
+        "handler": 1.125
+      },
+      "elapsedMs": 113.04420000000027
+    },
+    {
+      "round": 5,
+      "scenario": "route-direct",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "depok",
+        "to": "jayakarta",
+        "passengerCount": 2,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.241,
+        "graph_load": 0.006,
+        "dijkstra": 0.371,
+        "route_format": 0.086,
+        "handler": 2.007
+      },
+      "elapsedMs": 47.64440000000104
+    },
+    {
+      "round": 5,
+      "scenario": "route-interchange",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "bogor",
+        "to": "tangerang",
+        "passengerCount": 2,
+        "preference": "MIN_TRANSFERS"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.519,
+        "graph_load": 0.008,
+        "dijkstra": 0.556,
+        "route_format": 0.181,
+        "handler": 2.581
+      },
+      "elapsedMs": 476.3297999999995
+    },
+    {
+      "round": 5,
+      "scenario": "route-walking",
+      "target": "/routes/plan",
+      "parameters": {
+        "from": "dukuh-atas",
+        "to": "cawang",
+        "passengerCount": 1,
+        "preference": "FASTEST"
+      },
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "station_lookup": 0.196,
+        "graph_load": 0.003,
+        "dijkstra": 0.201,
+        "route_format": 0.049,
+        "handler": 1.394
+      },
+      "elapsedMs": 45.90240000000267
+    },
+    {
+      "round": 5,
+      "scenario": "schedule-krl",
+      "target": "/schedules?station=Bogor&trainType=KRL&isWeekend=false&departureFrom=05%3A00&page=1&limit=30",
+      "parameters": null,
+      "status": 200,
+      "ok": true,
+      "timings": {
+        "schedule_catalog": 0.065,
+        "schedule_query": 1.231,
+        "handler": 2.331
+      },
+      "elapsedMs": 42.97830000000249
+    }
+  ]
+}
