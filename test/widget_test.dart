@@ -144,56 +144,42 @@ void main() {
     expect(find.text('Peron 1'), findsOneWidget);
   });
 
-  testWidgets('Account opens interactive accessibility settings', (
+  testWidgets('Blind Guide switch opens auto-voice camera mode and resets', (
     WidgetTester tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     appRouter.go('/akun');
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('Aksesibilitas'),
+      find.text('Pemandu Tunanetra'),
       180,
       scrollable: find.byType(Scrollable),
     );
-    await tester.tap(find.text('Aksesibilitas'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pengaturan tampilan'), findsOneWidget);
-    expect(find.text('Teks dan suara'), findsOneWidget);
-    expect(find.text('Kontras tinggi'), findsNothing);
-    expect(find.text('Kurangi animasi'), findsNothing);
-    expect(find.byType(Switch), findsNWidgets(2));
-
-    var switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
-    expect(switches.map((item) => item.value), [false, true]);
-
-    await tester.tap(find.text('Teks besar'));
-    await tester.pumpAndSettle();
-    switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
-    expect(switches[0].value, isTrue);
+    expect(find.text('Aksesibilitas'), findsNothing);
+    final guideSwitch = find.byKey(const ValueKey('blind-guide-switch'));
+    expect(tester.widget<Switch>(guideSwitch).value, isFalse);
 
     await tester.scrollUntilVisible(
-      find.text('Baca'),
+      guideSwitch,
       180,
       scrollable: find.byType(Scrollable),
     );
-    await tester.tap(find.text('Baca'));
+    await tester.tap(guideSwitch);
+
+    final uri = appRouter.routeInformationProvider.value.uri;
+    expect(uri.path, '/asisten/pemandu-kamera');
+    expect(uri.queryParameters['autoVoice'], 'true');
+
     await tester.pump();
-    expect(
-      find.text(
-        'Membacakan: Dukuh Atas ke Harjamukti, Peron 2, tiba 4 menit lagi.',
-      ),
-      findsOneWidget,
-    );
-    tester
-        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
-        .clearSnackBars();
+    appRouter.pop();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
-    await tester.pumpAndSettle();
-    expect(find.text('Mode tamu aktif'), findsOneWidget);
+    expect(tester.widget<Switch>(guideSwitch).value, isFalse);
   });
 
   testWidgets('Account opens filterable ticket history without bottom nav', (
@@ -389,7 +375,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Chat Pembayaran'), findsOneWidget);
-      expect(find.text('Petugas pembayaran'), findsWidgets);
+      expect(
+        find.text('Petugas pembayaran', skipOffstage: false),
+        findsWidgets,
+      );
       expect(
         find.text('Saya butuh bantuan terkait pembayaran tiket'),
         findsOneWidget,

@@ -138,7 +138,10 @@ class _VoicePresentation {
   final IconData icon;
   final Color color;
 
-  factory _VoicePresentation.forState(AssistantInteractionState state, AppLocalizations l10n) {
+  factory _VoicePresentation.forState(
+    AssistantInteractionState state,
+    AppLocalizations l10n,
+  ) {
     return switch (state) {
       AssistantInteractionState.ready => _VoicePresentation(
         prompt: l10n.voiceTapToSpeak,

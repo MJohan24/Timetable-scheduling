@@ -42,6 +42,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -59,7 +60,7 @@ void main() {
     expect(find.text('Email: guest@example.com'), findsOneWidget);
     expect(
       find.bySemanticsLabel(
-        'Tiket Setiabudi ke Manggarai, status Aktif, email '
+        'Tiket perjalanan: Setiabudi → Manggarai, Aktif, email '
         'guest@example.com, 13 Agu 2026, Rp7.800',
       ),
       findsOneWidget,
@@ -90,6 +91,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -111,7 +113,10 @@ void main() {
     final header = tester.widget<Container>(
       find.byKey(const Key('ticket-page-header')),
     );
-    final titleFinder = find.text('Tiket');
+    final titleFinder = find.descendant(
+      of: find.byKey(const Key('ticket-page-header')),
+      matching: find.text('Tiket'),
+    );
     final title = tester.widget<Text>(titleFinder);
     final filterFinder = find.byKey(const Key('ticket-history-filter'));
     final filter = tester.widget<Container>(filterFinder);
@@ -177,6 +182,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         theme: ThemeData(
           inputDecorationTheme: const InputDecorationTheme(
             border: OutlineInputBorder(),
@@ -237,6 +243,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -267,6 +274,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -280,7 +288,12 @@ void main() {
     await tester.pumpAndSettle();
 
     final titleSemantics = tester
-        .getSemantics(find.bySemanticsLabel('Tiket'))
+        .getSemantics(
+          find.descendant(
+            of: find.byKey(const Key('ticket-page-header')),
+            matching: find.bySemanticsLabel('Tiket'),
+          ),
+        )
         .getSemanticsData();
     expect(titleSemantics.flagsCollection.isHeader, isTrue);
   });
@@ -297,6 +310,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(
             context,
@@ -345,6 +359,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -390,6 +405,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

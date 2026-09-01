@@ -72,7 +72,7 @@ class _RouteResultPageState extends State<RouteResultPage> {
                   RouteViewState.initial || RouteViewState.loading =>
                     const Center(child: CircularProgressIndicator()),
                   RouteViewState.error => _RouteError(
-                    message: _controller.errorMessage!,
+                    message: AppLocalizations.of(context)!.routeLoadError,
                     onRetry: _controller.retry,
                   ),
                   RouteViewState.success => _RouteContent(
@@ -101,7 +101,7 @@ class _RouteResultPageState extends State<RouteResultPage> {
               key: const Key('journey-map-preview-button'),
               onPressed: () => context.push('/rute/peta', extra: route),
               icon: const Icon(Icons.map_rounded),
-              label: const Text('Lihat Line di Peta'),
+              label: Text(AppLocalizations.of(context)!.routeShowLineMap),
             ),
           );
         },
@@ -140,8 +140,8 @@ class _RouteError extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Jika baru membuka server gratis, tunggu cold start lalu coba lagi.',
+          Text(
+            AppLocalizations.of(context)!.routeColdStartHint,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
@@ -149,7 +149,7 @@ class _RouteError extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Coba Lagi'),
+            label: Text(AppLocalizations.of(context)!.actionRetry),
           ),
         ],
       ),
@@ -348,8 +348,11 @@ class _RouteContent extends StatelessWidget {
   }
 
   Widget _summary(AppLocalizations l10n) => Semantics(
-    label:
-        '${route.travelTime} menit, ${route.stops} stasiun, tarif $_formattedFare',
+    label: l10n.routeSummarySemantics(
+      route.travelTime,
+      route.stops,
+      _formattedFare,
+    ),
     child: Container(
       padding: const EdgeInsets.all(16),
       decoration: _cardDecoration(),
@@ -411,7 +414,7 @@ class _RouteContent extends StatelessWidget {
                 ),
               ),
               Text(
-                '${route.transferCount} transit',
+                l10n.routeTransferCount(route.transferCount),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -426,6 +429,7 @@ class _RouteContent extends StatelessWidget {
 
   Widget _speechControls(BuildContext context) {
     final language = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -436,13 +440,13 @@ class _RouteContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.record_voice_over_rounded),
               SizedBox(width: 8),
               Text(
-                'Panduan suara perjalanan',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                AppLocalizations.of(context)!.routeVoiceGuide,
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -452,17 +456,25 @@ class _RouteContent extends StatelessWidget {
             runSpacing: 8,
             children: [
               _speechButton(
-                'Bacakan Rute',
+                l10n.readRouteBtn,
                 Icons.volume_up_rounded,
                 () => controller.speak(language),
               ),
               _speechButton(
-                'Ulangi',
+                l10n.actionRepeat,
                 Icons.replay_rounded,
                 () => controller.repeat(language),
               ),
-              _speechButton('Jeda', Icons.pause_rounded, controller.pause),
-              _speechButton('Hentikan', Icons.stop_rounded, controller.stop),
+              _speechButton(
+                l10n.actionPause,
+                Icons.pause_rounded,
+                controller.pause,
+              ),
+              _speechButton(
+                l10n.actionStop,
+                Icons.stop_rounded,
+                controller.stop,
+              ),
             ],
           ),
         ],

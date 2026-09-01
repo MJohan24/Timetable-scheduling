@@ -287,12 +287,15 @@ class _ErrorState extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 32),
     child: Column(
       children: [
-        const Text(
-          'Server sedang aktif atau koneksi terputus. Data stasiun belum dapat dimuat.',
+        Text(
+          AppLocalizations.of(context)!.stationLoadError,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        OutlinedButton(onPressed: onRetry, child: const Text('Coba lagi')),
+        OutlinedButton(
+          onPressed: onRetry,
+          child: Text(AppLocalizations.of(context)!.actionRetry),
+        ),
       ],
     ),
   );

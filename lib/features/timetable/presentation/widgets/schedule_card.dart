@@ -37,6 +37,7 @@ class ScheduleCard extends StatelessWidget {
     final status = ScheduleStatusCalculator.calculate(
       schedule: schedule,
       now: now ?? DateTime.now(),
+      l10n: l10n,
     );
     final isPassed = status.hasDeparted;
     final statusColor = switch (status.kind) {
@@ -182,9 +183,9 @@ class ScheduleCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Status berdasarkan jadwal (bukan posisi kereta live)',
-                style: TextStyle(
+              Text(
+                l10n.scheduleStatusDisclaimer,
+                style: const TextStyle(
                   fontSize: 10,
                   color: AppColors.textHint,
                   fontWeight: FontWeight.w500,

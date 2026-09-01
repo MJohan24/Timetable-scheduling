@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../models/assistant_copy.dart';
+
 enum AssistantInteractionState {
   ready,
   listening,
@@ -16,7 +18,8 @@ class AssistantController extends ChangeNotifier {
     this.listeningDuration = const Duration(milliseconds: 850),
     this.processingDuration = const Duration(milliseconds: 700),
     this.speakingDuration = const Duration(milliseconds: 650),
-  });
+    AssistantCopy? copy,
+  }) : _copy = copy ?? AssistantCopy.indonesian();
 
   final Duration listeningDuration;
   final Duration processingDuration;
@@ -30,8 +33,13 @@ class AssistantController extends ChangeNotifier {
   int completedExchangeId = 0;
   String? userTranscript;
   String? assistantResponse;
+  AssistantCopy _copy;
 
   Timer? _timer;
+
+  void configure(AssistantCopy copy) => _copy = copy;
+
+  AssistantCopy get copy => _copy;
 
   void toggleWakeWord(bool value) {
     if (wakeWordEnabled == value) return;
@@ -72,19 +80,18 @@ class AssistantController extends ChangeNotifier {
   void showError() {
     _timer?.cancel();
     _timer = null;
-    assistantResponse = 'Saya belum memahami tujuanmu.';
+    assistantResponse = copy.unknownDestination;
     _setState(AssistantInteractionState.error);
   }
 
   void _finishListening() {
-    userTranscript = 'Saya ingin ke $demoDestination dari $demoOrigin.';
+    userTranscript = copy.demoTranscript(demoDestination, demoOrigin);
     _setState(AssistantInteractionState.processing);
     _timer = Timer(processingDuration, _finishProcessing);
   }
 
   void _finishProcessing() {
-    assistantResponse =
-        'Rute tercepat membutuhkan 7 menit. Kereta tiba 5 menit lagi.';
+    assistantResponse = copy.demoResponse;
     completedExchangeId++;
     _setState(AssistantInteractionState.speaking);
     _timer = Timer(speakingDuration, _finishSpeaking);

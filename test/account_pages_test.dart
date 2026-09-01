@@ -107,6 +107,29 @@ void main() {
     expect(find.byKey(const ValueKey('account-identity-card')), findsOneWidget);
     expect(find.byKey(const ValueKey('account-menu-section')), findsOneWidget);
     expect(find.byKey(const ValueKey('account-logout')), findsNothing);
+    expect(find.text('Pemandu Tunanetra'), findsOneWidget);
+    expect(find.text('Aksesibilitas'), findsNothing);
+  });
+
+  testWidgets('Blind Guide uses a separate card with an inactive switch', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(430, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pump(tester, const ProfilePage());
+
+    final menu = find.byKey(const ValueKey('account-menu-section'));
+    final guide = find.byKey(const ValueKey('blind-guide-card'));
+    final guideSwitch = find.byKey(const ValueKey('blind-guide-switch'));
+
+    expect(menu, findsOneWidget);
+    expect(guide, findsOneWidget);
+    expect(
+      tester.getTopLeft(guide).dy,
+      greaterThan(tester.getBottomLeft(menu).dy),
+    );
+    expect(tester.widget<Switch>(guideSwitch).value, isFalse);
   });
 
   testWidgets('signed-in account exposes identity and existing actions', (

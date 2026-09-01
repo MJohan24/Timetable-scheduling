@@ -67,9 +67,7 @@ class ProfileDetailScaffold extends StatelessWidget {
                     children: [
                       Semantics(
                         button: true,
-                        label:
-                            AppLocalizations.of(context)?.actionBack ??
-                            'Kembali',
+                        label: AppLocalizations.of(context)!.actionBack,
                         child: Material(
                           color: Colors.white.withValues(alpha: 0.16),
                           shape: const CircleBorder(),

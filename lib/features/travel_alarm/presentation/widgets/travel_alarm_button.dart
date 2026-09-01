@@ -27,7 +27,9 @@ class TravelAlarmButton extends StatelessWidget {
       onTap: onPressed,
       child: ExcludeSemantics(
         child: Tooltip(
-          message: isActive ? l10n.alarmActiveTooltip : l10n.alarmInactiveTooltip,
+          message: isActive
+              ? l10n.alarmActiveTooltip
+              : l10n.alarmInactiveTooltip,
           child: Material(
             color: isActive ? AppColors.statusRed : AppColors.surface,
             elevation: 5,

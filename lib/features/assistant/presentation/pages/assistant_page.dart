@@ -7,6 +7,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../travel_alarm/presentation/controllers/travel_alarm_controller.dart';
 import '../controllers/assistant_controller.dart';
 import '../controllers/assistant_conversation_controller.dart';
+import '../models/assistant_copy.dart';
+import '../../../travel_alarm/presentation/models/travel_alarm_copy.dart';
 import '../../data/repositories/assistant_chat_repository_impl.dart';
 import '../widgets/assistant_composer.dart';
 import '../widgets/assistant_conversation_timeline.dart';
@@ -84,6 +86,16 @@ class _AssistantPageState extends State<AssistantPage>
     }
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context)!;
+    final copy = AssistantCopy.fromL10n(l10n);
+    _controller.configure(copy);
+    _conversationController.configure(copy);
+    _alarmController.configure(TravelAlarmCopy.fromL10n(l10n));
   }
 
   void _handleVoiceControllerChange() {
@@ -272,7 +284,9 @@ class _AssistantPageState extends State<AssistantPage>
                           onTap: () => context.go('/pusat-bantuan'),
                         ),
                         AssistantQuickAction(
-                          label: 'Pemandu Kamera',
+                          label: AppLocalizations.of(
+                            context,
+                          )!.assistantCameraGuideAction,
                           icon: Icons.camera_alt_rounded,
                           onTap: () => context.push('/asisten/pemandu-kamera'),
                         ),

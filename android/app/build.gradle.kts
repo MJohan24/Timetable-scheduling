@@ -9,6 +9,9 @@ plugins {
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
+val releaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use(keystoreProperties::load)
 }
@@ -47,7 +50,7 @@ android {
 
     buildTypes {
         release {
-            if (!keystorePropertiesFile.exists()) {
+            if (releaseBuildRequested && !keystorePropertiesFile.exists()) {
                 throw GradleException(
                     "Release signing is not configured. Create android/key.properties from " +
                         "android/key.properties.example.",

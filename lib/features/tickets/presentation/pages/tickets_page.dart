@@ -250,8 +250,8 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                   color: AppColors.surface,
                   child: Semantics(
                     header: true,
-                    child: const Text(
-                      'Tiket',
+                    child: Text(
+                      AppLocalizations.of(context)!.tickets,
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 22,
@@ -314,7 +314,9 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                         autofillHints: const [AutofillHints.email],
                         style: const TextStyle(fontSize: 13),
                         decoration: InputDecoration(
-                          labelText: 'Email untuk tiket dan riwayat',
+                          labelText: AppLocalizations.of(
+                            context,
+                          )!.ticketEmailInputLabel,
                           labelStyle: const TextStyle(
                             color: AppColors.textHint,
                             fontSize: 13,
@@ -339,7 +341,9 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                           suffixIcon: hasDraft
                               ? null
                               : IconButton(
-                                  tooltip: 'Tampilkan riwayat',
+                                  tooltip: AppLocalizations.of(
+                                    context,
+                                  )!.ticketShowHistory,
                                   onPressed: _loadGuestHistory,
                                   icon: const Icon(
                                     Icons.search_rounded,
@@ -420,14 +424,17 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
           const SizedBox(height: 24),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Tiket saya',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  AppLocalizations.of(context)!.myTickets,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               IconButton(
-                tooltip: 'Muat ulang tiket',
+                tooltip: AppLocalizations.of(context)!.ticketReload,
                 onPressed: state.stage == TicketStage.loadingHistory
                     ? null
                     : _loadDeviceHistory,
@@ -537,13 +544,13 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.route_rounded, color: AppColors.primaryBlue),
-              SizedBox(width: 8),
+              const Icon(Icons.route_rounded, color: AppColors.primaryBlue),
+              const SizedBox(width: 8),
               Text(
-                'Perjalanan dipilih',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                AppLocalizations.of(context)!.ticketSelectedTrip,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -555,9 +562,12 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
           const SizedBox(height: 6),
           Text(
             [
-              if (widget.duration != null) '${widget.duration} menit',
+              if (widget.duration != null)
+                AppLocalizations.of(context)!.durationMinutes(widget.duration!),
               if (widget.transit != null)
-                widget.transit == '1' ? '1 transit' : 'Tanpa transit',
+                widget.transit == '1'
+                    ? AppLocalizations.of(context)!.routeTransferCount(1)
+                    : AppLocalizations.of(context)!.routeNoTransit,
             ].join(' · '),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
@@ -599,9 +609,7 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Tiket aktif hanya setelah Xendit mengonfirmasi pembayaran ke server.',
-          ),
+          Text(AppLocalizations.of(context)!.ticketPaymentConfirmation),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -609,7 +617,7 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                 child: OutlinedButton.icon(
                   onPressed: terminal ? null : _openCheckout,
                   icon: const Icon(Icons.open_in_new_rounded),
-                  label: const Text('Buka pembayaran'),
+                  label: Text(AppLocalizations.of(context)!.ticketOpenPayment),
                 ),
               ),
               const SizedBox(width: 10),
@@ -624,7 +632,7 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.sync_rounded),
-                  label: const Text('Cek status'),
+                  label: Text(AppLocalizations.of(context)!.ticketCheckStatus),
                 ),
               ),
             ],
@@ -648,18 +656,19 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
     final ownerEmail =
         controller.state.ownerEmailsByTicketId[ticket.id] ??
         ticket.contactEmail;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final dateLabel = DateFormat(
       'dd MMM yyyy',
-      'id',
+      locale,
     ).format(ticket.travelDate.toLocal());
     final priceLabel = NumberFormat.currency(
-      locale: 'id_ID',
+      locale: locale,
       symbol: 'Rp',
       decimalDigits: 0,
     ).format(ticket.price);
     final semanticsLabel = [
-      'Tiket ${ticket.origin.name} ke ${ticket.destination.name}',
-      'status ${_statusLabel(ticket.status)}',
+      '${AppLocalizations.of(context)!.travelTicket}: ${ticket.origin.name} → ${ticket.destination.name}',
+      _statusLabel(ticket.status),
       if (ownerEmail != null) 'email $ownerEmail',
       dateLabel,
       priceLabel,
@@ -753,7 +762,9 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                             const SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                'Email: $ownerEmail',
+                                AppLocalizations.of(
+                                  context,
+                                )!.ticketOwnerEmail(ownerEmail),
                                 style: const TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 13,
@@ -783,10 +794,10 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
   }
 
   String _filterLabel(_TicketFilter filter) => switch (filter) {
-    _TicketFilter.all => 'Semua',
-    _TicketFilter.unpaid => 'Belum bayar',
-    _TicketFilter.active => 'Aktif',
-    _TicketFilter.completed => 'Selesai',
+    _TicketFilter.all => AppLocalizations.of(context)!.all,
+    _TicketFilter.unpaid => AppLocalizations.of(context)!.unpaid,
+    _TicketFilter.active => AppLocalizations.of(context)!.active,
+    _TicketFilter.completed => AppLocalizations.of(context)!.completed,
   };
 
   Widget _buildActiveTicket(Ticket ticket) {
@@ -799,14 +810,17 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
         Row(
           children: [
             IconButton(
-              tooltip: 'Kembali ke daftar tiket',
+              tooltip: AppLocalizations.of(context)!.ticketBackToList,
               onPressed: _loadDeviceHistory,
               icon: const Icon(Icons.arrow_back_rounded),
             ),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Tiket aktif',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                AppLocalizations.of(context)!.ticketTypeActive,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             TravelAlarmButton(isActive: alarmActive, onPressed: _prepareAlarm),
@@ -824,8 +838,8 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                 color: AppColors.textPrimary,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Tunjukkan kode ini di gerbang',
+              Text(
+                AppLocalizations.of(context)!.ticketGateInstruction,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 18),
@@ -844,7 +858,9 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
               if (ticket.departureTime != null) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Berangkat ${ticket.departureTime}',
+                  AppLocalizations.of(
+                    context,
+                  )!.ticketDepartureAt(ticket.departureTime!),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ],
@@ -866,7 +882,7 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
                 child: Text(
                   alarmActive
                       ? _alarmController.nextAlarmDescription
-                      : 'Alarm perjalanan belum diaktifkan',
+                      : AppLocalizations.of(context)!.travelAlarmInactive,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -892,13 +908,17 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
   };
 
   String _statusLabel(TicketStatus status) => switch (status) {
-    TicketStatus.pending || TicketStatus.paymentPending => 'Belum dibayar',
-    TicketStatus.paid => 'Dibayar',
-    TicketStatus.active => 'Aktif',
-    TicketStatus.used => 'Sudah digunakan',
-    TicketStatus.expired => 'Kedaluwarsa',
-    TicketStatus.cancelled => 'Dibatalkan',
-    TicketStatus.unknown => 'Tidak diketahui',
+    TicketStatus.pending || TicketStatus.paymentPending => AppLocalizations.of(
+      context,
+    )!.ticketStatusPending,
+    TicketStatus.paid => AppLocalizations.of(context)!.ticketStatusPaid,
+    TicketStatus.active => AppLocalizations.of(context)!.active,
+    TicketStatus.used => AppLocalizations.of(context)!.ticketStatusUsed,
+    TicketStatus.expired => AppLocalizations.of(context)!.ticketStatusExpired,
+    TicketStatus.cancelled => AppLocalizations.of(
+      context,
+    )!.ticketStatusCancelled,
+    TicketStatus.unknown => AppLocalizations.of(context)!.ticketStatusUnknown,
   };
 }
 
@@ -912,7 +932,7 @@ class _DeviceHistoryContext extends StatelessWidget {
     final countLabel = '$emailCount email tersimpan';
     return Semantics(
       container: true,
-      label: 'Menampilkan tiket dari perangkat ini, $countLabel',
+      label: AppLocalizations.of(context)!.ticketDeviceSemantics(countLabel),
       child: ExcludeSemantics(
         child: Container(
           width: double.infinity,
@@ -933,8 +953,8 @@ class _DeviceHistoryContext extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Menampilkan tiket dari perangkat ini',
+                    Text(
+                      AppLocalizations.of(context)!.ticketDeviceHeader,
                       style: TextStyle(
                         color: AppColors.primaryBlueDark,
                         fontSize: 12,
@@ -969,7 +989,7 @@ class _ActiveEmailContext extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       container: true,
-      label: 'Menampilkan tiket untuk $email',
+      label: AppLocalizations.of(context)!.ticketEmailSemantics(email),
       child: ExcludeSemantics(
         child: Container(
           width: double.infinity,
@@ -994,8 +1014,8 @@ class _ActiveEmailContext extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Menampilkan tiket untuk',
+                    Text(
+                      AppLocalizations.of(context)!.ticketEmailHeader,
                       style: TextStyle(
                         color: AppColors.primaryBlueDark,
                         fontSize: 12,
@@ -1040,8 +1060,15 @@ class _PartialHistoryPanel extends StatelessWidget {
         children: [
           const Icon(Icons.info_outline_rounded, color: AppColors.statusAmber),
           const SizedBox(width: 8),
-          const Expanded(child: Text('Sebagian riwayat belum dapat dimuat')),
-          TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.ticketPartialHistoryError,
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            child: Text(AppLocalizations.of(context)!.actionRetry),
+          ),
         ],
       ),
     );
@@ -1053,17 +1080,17 @@ class _EmptyTickets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 32),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.confirmation_num_outlined,
             size: 44,
             color: AppColors.textHint,
           ),
-          SizedBox(height: 10),
-          Text('Belum ada tiket pada kategori ini.'),
+          const SizedBox(height: 10),
+          Text(AppLocalizations.of(context)!.ticketEmptyCategory),
         ],
       ),
     );
@@ -1089,7 +1116,10 @@ class _ErrorPanel extends StatelessWidget {
           const Icon(Icons.error_outline_rounded, color: AppColors.statusRed),
           const SizedBox(width: 10),
           Expanded(child: Text(message)),
-          TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
+          TextButton(
+            onPressed: onRetry,
+            child: Text(AppLocalizations.of(context)!.actionRetry),
+          ),
         ],
       ),
     );

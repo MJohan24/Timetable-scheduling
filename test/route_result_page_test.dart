@@ -183,8 +183,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Preview Line Perjalanan'), findsOneWidget);
-    expect(find.text('You Are Here: Bogor'), findsOneWidget);
+    expect(find.text('Pratinjau Line Perjalanan'), findsOneWidget);
+    expect(find.text('Anda Di Sini: Bogor'), findsOneWidget);
     expect(find.text('Lin Bogor'), findsOneWidget);
     expect(find.text('Lin Tangerang'), findsOneWidget);
     expect(find.text('Semua Line'), findsOneWidget);

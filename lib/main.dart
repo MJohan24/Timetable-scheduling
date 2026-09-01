@@ -15,6 +15,7 @@ import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/auth/presentation/widgets/auth_scope.dart';
 import 'features/travel_alarm/presentation/controllers/travel_alarm_controller.dart';
 import 'features/travel_alarm/presentation/widgets/travel_alarm_scope.dart';
+import 'features/travel_alarm/presentation/models/travel_alarm_copy.dart';
 import 'features/tickets/data/datasources/shared_preferences_device_ticket_store.dart';
 import 'features/tickets/data/repositories/ticket_repository_impl.dart';
 import 'features/tickets/domain/repositories/device_ticket_store.dart';
@@ -131,10 +132,15 @@ class _MyAppState extends State<MyApp> {
                   theme: AppTheme.lightTheme,
                   routerConfig: appRouter,
                   locale: appLocale.locale,
-                  builder: (context, child) => Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: child!,
-                  ),
+                  builder: (context, child) {
+                    _travelAlarmController.configure(
+                      TravelAlarmCopy.fromL10n(AppLocalizations.of(context)!),
+                    );
+                    return Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: child!,
+                    );
+                  },
                   localizationsDelegates: const [
                     AppLocalizations.delegate,
                     GlobalMaterialLocalizations.delegate,

@@ -1,4 +1,6 @@
 import '../entities/train_schedule.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/app_localizations_id.dart';
 
 enum ScheduleStatusKind { upcoming, soon, now, passed, unavailable }
 
@@ -21,9 +23,11 @@ abstract final class ScheduleStatusCalculator {
     required TrainSchedule schedule,
     required DateTime now,
     DateTime? serviceDate,
+    AppLocalizations? l10n,
   }) {
+    final copy = l10n ?? AppLocalizationsId();
     final parts = schedule.departureTime.split(':');
-    if (parts.length != 2) return _unavailable;
+    if (parts.length != 2) return _unavailable(copy);
 
     final hour = int.tryParse(parts[0]);
     final minute = int.tryParse(parts[1]);
@@ -33,7 +37,7 @@ abstract final class ScheduleStatusCalculator {
         hour > 23 ||
         minute < 0 ||
         minute > 59) {
-      return _unavailable;
+      return _unavailable(copy);
     }
 
     final base = serviceDate ?? now;
@@ -49,34 +53,34 @@ abstract final class ScheduleStatusCalculator {
     if (secondsUntil > 300) {
       final minutes = (secondsUntil / 60).ceil();
       return ScheduleStatus(
-        label: 'Berangkat $minutes menit lagi',
+        label: copy.scheduleStatusUpcoming(minutes),
         kind: ScheduleStatusKind.upcoming,
         departureAt: departureAt,
       );
     }
     if (secondsUntil > 60) {
       return ScheduleStatus(
-        label: 'Segera berangkat',
+        label: copy.scheduleStatusSoon,
         kind: ScheduleStatusKind.soon,
         departureAt: departureAt,
       );
     }
     if (secondsUntil >= -60) {
       return ScheduleStatus(
-        label: 'Berangkat sekarang',
+        label: copy.scheduleStatusNow,
         kind: ScheduleStatusKind.now,
         departureAt: departureAt,
       );
     }
     return ScheduleStatus(
-      label: 'Jadwal lewat',
+      label: copy.scheduleStatusPassed,
       kind: ScheduleStatusKind.passed,
       departureAt: departureAt,
     );
   }
 
-  static const _unavailable = ScheduleStatus(
-    label: 'Status jadwal tidak tersedia',
+  static ScheduleStatus _unavailable(AppLocalizations l10n) => ScheduleStatus(
+    label: l10n.scheduleStatusUnavailable,
     kind: ScheduleStatusKind.unavailable,
     departureAt: null,
   );

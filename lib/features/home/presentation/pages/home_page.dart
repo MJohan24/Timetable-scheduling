@@ -418,8 +418,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Jakarta Pusat',
+                  title: Text(
+                    l10n.homeAreaCentral,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -430,8 +430,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Jakarta Selatan',
+                  title: Text(
+                    l10n.homeAreaSouth,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -442,8 +442,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Jakarta Barat',
+                  title: Text(
+                    l10n.homeAreaWest,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -454,8 +454,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Jakarta Timur',
+                  title: Text(
+                    l10n.homeAreaEast,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -466,8 +466,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Jakarta Utara',
+                  title: Text(
+                    l10n.homeAreaNorth,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -478,8 +478,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                  title: const Text(
-                    'Bodetabek (Penyangga)',
+                  title: Text(
+                    l10n.homeAreaGreaterJakarta,
                     style: TextStyle(color: AppColors.textHint),
                   ),
                   onTap: () {
@@ -1106,7 +1106,10 @@ class _HomePageState extends State<HomePage> {
                                           queryParameters: {
                                             'lineType': dep.lineType,
                                             'destination': dep.destination,
-                                            'duration': dep.duration,
+                                            'duration': _localizedDuration(
+                                              l10n,
+                                              dep.duration,
+                                            ),
                                             'platform': dep.platform,
                                           },
                                         );
@@ -1390,9 +1393,12 @@ class _NextTrainRow extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.homeArrivingIn(departure.duration),
+                      AppLocalizations.of(context)!.homeArrivingIn(
+                        _localizedDuration(
+                          AppLocalizations.of(context)!,
+                          departure.duration,
+                        ),
+                      ),
                       textAlign: TextAlign.right,
                       style: const TextStyle(
                         fontSize: 13,
@@ -1422,6 +1428,11 @@ class _NextTrainRow extends StatelessWidget {
   }
 }
 
+String _localizedDuration(AppLocalizations l10n, String value) {
+  final match = RegExp(r'^(\d+) menit$').firstMatch(value);
+  return match == null ? value : '${match.group(1)} ${l10n.minutesOnly}';
+}
+
 // ── Section Preview Fasilitas Stasiun ──
 class _StationFacilitiesSection extends StatelessWidget {
   final String stationName;
@@ -1429,45 +1440,46 @@ class _StationFacilitiesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final facilities = [
       {
         'icon': Icons.accessible_rounded,
-        'label': 'Lift Aksesibel',
+        'label': l10n.facilityAccessibleLift,
         'color': AppColors.primaryBlue,
       },
       {
         'icon': Icons.escalator_rounded,
-        'label': 'Eskalator',
+        'label': l10n.facilityEscalator,
         'color': AppColors.statusGreen,
       },
       {
         'icon': Icons.mosque_rounded,
-        'label': 'Musholla',
+        'label': l10n.facilityPrayerRoom,
         'color': Colors.amber.shade800,
       },
       {
         'icon': Icons.wc_rounded,
-        'label': 'Toilet Difabel',
+        'label': l10n.facilityAccessibleToilet,
         'color': Colors.teal.shade700,
       },
       {
         'icon': Icons.power_rounded,
-        'label': 'Charger',
+        'label': l10n.facilityCharger,
         'color': Colors.orange.shade800,
       },
       {
         'icon': Icons.store_rounded,
-        'label': 'Minimarket',
+        'label': l10n.facilityMinimarket,
         'color': Colors.indigo.shade700,
       },
       {
         'icon': Icons.child_friendly_rounded,
-        'label': 'Menyusui',
+        'label': l10n.facilityNursingRoom,
         'color': Colors.pink.shade600,
       },
       {
         'icon': Icons.local_atm_rounded,
-        'label': 'ATM Center',
+        'label': l10n.facilityAtmCenter,
         'color': Colors.blue.shade800,
       },
     ];

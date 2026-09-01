@@ -6,18 +6,25 @@ import '../../../travel_alarm/domain/entities/travel_alarm_state.dart';
 import '../../../travel_alarm/presentation/controllers/travel_alarm_controller.dart';
 import '../../domain/entities/assistant_conversation_item.dart';
 import '../../domain/repositories/assistant_chat_repository.dart';
+import '../models/assistant_copy.dart';
 
 class AssistantConversationController extends ChangeNotifier {
   AssistantConversationController({
     required this.alarmController,
     this.chatRepository,
-  });
+    AssistantCopy? copy,
+  }) : _copy = copy ?? AssistantCopy.indonesian();
 
   final TravelAlarmController alarmController;
   final AssistantChatRepository? chatRepository;
   final List<AssistantConversationItem> _items = [];
   int _nextId = 0;
   bool _isSending = false;
+  AssistantCopy _copy;
+
+  void configure(AssistantCopy copy) => _copy = copy;
+
+  AssistantCopy get copy => _copy;
 
   UnmodifiableListView<AssistantConversationItem> get items =>
       UnmodifiableListView(_items);
@@ -39,9 +46,7 @@ class AssistantConversationController extends ChangeNotifier {
       try {
         _appendAssistant(await chatRepository!.ask(text));
       } on Exception {
-        _appendAssistant(
-          'Asisten sedang tidak tersedia. Coba lagi atau cek informasi resmi stasiun.',
-        );
+        _appendAssistant(copy.unavailable);
       } finally {
         _isSending = false;
       }
@@ -49,9 +54,7 @@ class AssistantConversationController extends ChangeNotifier {
       return;
     }
     if (!handled) {
-      _appendAssistant(
-        'Saya belum memahami perintah itu. Coba: "Alarm berikutnya kapan?" atau "Aktifkan semua alarm tiket saya".',
-      );
+      _appendAssistant(copy.unknownCommand);
     }
     notifyListeners();
   }
@@ -83,34 +86,34 @@ class AssistantConversationController extends ChangeNotifier {
       _append(
         author: AssistantMessageAuthor.assistant,
         kind: AssistantConversationItemKind.noActiveTicket,
-        text: 'Belum ada tiket aktif',
+        text: copy.noActiveTicket,
       );
       return true;
     }
 
     if (normalized.contains('batalkan semua alarm')) {
       if (!alarmController.state.hasAnyAlarm) {
-        _appendAssistant('Tidak ada alarm aktif.');
+        _appendAssistant(copy.noActiveAlarm);
         return true;
       }
       alarmController.cancelAllAlarms();
-      _appendAssistant('Semua alarm perjalanan dibatalkan.');
+      _appendAssistant(copy.allAlarmsCancelled);
       return true;
     }
 
     if (normalized.contains('matikan alarm tujuan')) {
       if (!alarmController.state.destinationAlarmEnabled) {
-        _appendAlarmStatus('Alarm tujuan sudah nonaktif.');
+        _appendAlarmStatus(copy.destinationAlarmAlreadyOff);
         return true;
       }
       alarmController.disableDestinationAlarm();
-      _appendAlarmStatus('Alarm tujuan dinonaktifkan.');
+      _appendAlarmStatus(copy.destinationAlarmDisabled);
       return true;
     }
 
     if (normalized.contains('aktifkan semua alarm')) {
       alarmController.configureAlarms(departure: true, destination: true);
-      _appendAlarmStatus('Semua alarm perjalanan aktif.');
+      _appendAlarmStatus(copy.allAlarmsActive);
       return true;
     }
 
@@ -121,7 +124,7 @@ class AssistantConversationController extends ChangeNotifier {
 
     if (normalized.contains('datang') || normalized.contains('berapa menit')) {
       _appendAssistant(
-        'Kereta datang ${alarmController.state.minutesUntilTrain} menit lagi',
+        copy.trainArrivesIn(alarmController.state.minutesUntilTrain),
       );
       return true;
     }
