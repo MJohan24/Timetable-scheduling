@@ -25,6 +25,7 @@ coverage/
 
 # Local benchmark measurements (may identify API hostnames).
 reports/performance/
+reports/performance-local/
 
 # Prisma (jika menggunakan SQLite lokal, agar tidak ter-commit)
 prisma/*.db

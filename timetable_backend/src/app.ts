@@ -25,6 +25,16 @@ import {
 } from './config/productionConfig';
 import { prisma } from './infrastructure/database/prismaClient';
 import { requestTiming } from './infrastructure/observability/requestTiming';
+import { RouteService } from './domain/services/routeService';
+import { getStationCatalog } from './domain/services/stationCatalogService';
+import {
+  getTimetableReadModel,
+  startTimetableReadModelRefresh,
+} from './domain/services/timetableReadModel';
+import {
+  assertTransitReadModelsLoaded,
+  runtimeReadiness,
+} from './infrastructure/readiness/runtimeReadiness';
 
 if (process.env.NODE_ENV === 'production') {
   const report = validateProductionConfig();
@@ -85,6 +95,17 @@ app.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
 });
 app.get('/ready', async (_req, res) => {
+  if (!runtimeReadiness.isReady()) {
+    res.status(503).json({
+      success: false,
+      error: {
+        code: 'READ_MODELS_NOT_READY',
+        message: 'Transit read models are not ready.',
+        missing: runtimeReadiness.missing(),
+      },
+    });
+    return;
+  }
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.json({
@@ -132,9 +153,45 @@ io.on('connection', (socket) => {
   });
 });
 
+export async function warmRuntime() {
+  const [routeConnections, stations, timetable] = await Promise.all([
+    RouteService.warmGraph(),
+    getStationCatalog(),
+    getTimetableReadModel(),
+  ]);
+  assertTransitReadModelsLoaded({
+    routeConnections,
+    stations,
+    timetableStationCount: timetable?.departuresByStationId.size ?? 0,
+  });
+  await RouteService.warmPlanning();
+  runtimeReadiness.markReady('routeGraph');
+  runtimeReadiness.markReady('stationCatalog');
+  runtimeReadiness.markReady('timetable');
+}
+
+export async function startServer() {
+  await warmRuntime();
+  startTimetableReadModelRefresh(60_000, (available) => {
+    if (available) runtimeReadiness.markReady('timetable');
+    else runtimeReadiness.markUnavailable('timetable');
+  });
+  await new Promise<void>((resolve, reject) => {
+    const onError = (error: Error) => reject(error);
+    server.once('error', onError);
+    server.listen(PORT, () => {
+      server.off('error', onError);
+      console.log(`Server and WebSocket are running on port ${PORT}`);
+      resolve();
+    });
+  });
+}
+
 if (require.main === module) {
-  server.listen(PORT, () => {
-    console.log(`Server and WebSocket are running on port ${PORT}`);
+  void startServer().catch((error) => {
+    console.error(`[startup] Server did not start: ${error instanceof Error ? error.message : 'unknown error'}`);
+    process.exitCode = 1;
+    void prisma.$disconnect();
   });
 }
 

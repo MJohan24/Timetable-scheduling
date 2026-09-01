@@ -3,6 +3,12 @@ import { ApiError } from '../errors/ApiError';
 import { FareService } from './fareService';
 import { publicCodeForLine, stationDisplayName } from './stationIdentity';
 import { beginTiming, measurePhase } from '../../infrastructure/observability/requestTiming';
+import { AsyncValueCache } from '../../infrastructure/cache/asyncValueCache';
+import {
+  clearStationCatalog,
+  findStationInCatalog,
+  getStationCatalog,
+} from './stationCatalogService';
 
 type RouteStepKind = 'board' | 'transfer' | 'continue' | 'arrive';
 
@@ -43,7 +49,20 @@ export interface RoutePlanResult {
   exitGateB: string;
 }
 
-const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+const routeGraphCache = new AsyncValueCache<Awaited<ReturnType<typeof loadRouteGraph>>>();
+
+function loadRouteGraph() {
+  return prisma.routeConnection.findMany({
+    include: {
+      fromNode: {
+        include: { station: { include: { publicCodes: true } }, line: true },
+      },
+      toNode: {
+        include: { station: { include: { publicCodes: true } }, line: true },
+      },
+    },
+  });
+}
 
 export type RoutePreference = 'FASTEST' | 'MIN_TRANSFERS';
 type RouteCost = { minutes: number; transfers: number };
@@ -84,35 +103,37 @@ const popQueue = (heap: QueueItem[], preference: RoutePreference) => {
 };
 
 export class RouteService {
-  static async resolveStation(identifier: string) {
-    const identityScope = { slug: { not: null }, isBoardingAllowed: true } as const;
-    const include = { nodes: true, publicCodes: true } as const;
-    const exactStation = await prisma.station.findFirst({
-      where: {
-        ...identityScope,
-        OR: [
-          { id: identifier },
-          { slug: identifier.toLowerCase() },
-          { operationalCode: { equals: identifier, mode: 'insensitive' } },
-          { publicCodes: { some: { code: { equals: identifier } } } },
-        ],
-      },
-      include,
-    });
-    if (exactStation) return exactStation;
+  static warmGraph() {
+    return routeGraphCache.get(loadRouteGraph);
+  }
 
-    const station = await prisma.station.findFirst({
-      where: {
-        ...identityScope,
-        OR: [
-          { name: { equals: identifier, mode: 'insensitive' } },
-          { officialName: { equals: identifier, mode: 'insensitive' } },
-          { nodes: { some: { nodeKey: { equals: identifier } } } },
-          { aliases: { some: { normalized: normalize(identifier) } } },
-        ],
-      },
-      include,
-    });
+  static async warmPlanning() {
+    const connections = await this.warmGraph();
+    await getStationCatalog();
+    const sample = connections.find((connection) => (
+      connection.fromNode.stationId !== connection.toNode.stationId
+      && connection.fromNode.station.slug != null
+      && connection.toNode.station.slug != null
+      && connection.fromNode.station.isBoardingAllowed
+      && connection.toNode.station.isBoardingAllowed
+    ));
+    if (sample) {
+      await this.computeRoute(
+        sample.fromNode.station.slug!,
+        sample.toNode.station.slug!,
+        1,
+        'FASTEST',
+      );
+    }
+  }
+
+  static clearGraphCache() {
+    routeGraphCache.clear();
+    clearStationCatalog();
+  }
+
+  static async resolveStation(identifier: string) {
+    const station = findStationInCatalog(await getStationCatalog(), identifier, true);
     if (!station) {
       throw new ApiError(404, `Station not found: ${identifier}`, 'STATION_NOT_FOUND');
     }
@@ -124,6 +145,15 @@ export class RouteService {
     toIdentifier: string,
     passengerCount = 1,
     preference: RoutePreference = 'FASTEST',
+  ): Promise<RoutePlanResult> {
+    return this.computeRoute(fromIdentifier, toIdentifier, passengerCount, preference);
+  }
+
+  private static async computeRoute(
+    fromIdentifier: string,
+    toIdentifier: string,
+    passengerCount: number,
+    preference: RoutePreference,
   ): Promise<RoutePlanResult> {
     const [fromStation, toStation] = await measurePhase('station_lookup', () => Promise.all([
       this.resolveStation(fromIdentifier),
@@ -137,16 +167,7 @@ export class RouteService {
       );
     }
 
-    const connections = await measurePhase('graph_load', () => prisma.routeConnection.findMany({
-      include: {
-        fromNode: {
-          include: { station: { include: { publicCodes: true } }, line: true },
-        },
-        toNode: {
-          include: { station: { include: { publicCodes: true } }, line: true },
-        },
-      },
-    }));
+    const connections = await measurePhase('graph_load', () => this.warmGraph());
     const finishDijkstra = beginTiming('dijkstra');
     const adjacency = new Map<string, typeof connections>();
     for (const connection of connections) {
@@ -208,6 +229,7 @@ export class RouteService {
       cursor = connection.fromNodeId;
     }
     finishDijkstra();
+    const finishRouteFormat = beginTiming('route_format');
     const originNode = path[0]?.fromNode;
     if (!originNode) {
       throw new ApiError(422, 'Route has no traversable connection', 'ROUTE_NOT_FOUND');
@@ -303,7 +325,7 @@ export class RouteService {
       isDestination: true,
     });
 
-    return {
+    const result: RoutePlanResult = {
       from: stationDisplayName(fromStation),
       to: stationDisplayName(toStation),
       travelTime,
@@ -321,5 +343,7 @@ export class RouteService {
       exitGateA: 'Pintu utama',
       exitGateB: 'Area antar-jemput',
     };
+    finishRouteFormat();
+    return result;
   }
 }

@@ -6,6 +6,10 @@ import { prisma } from '../src/infrastructure/database/prismaClient';
 
 after(() => prisma.$disconnect());
 
+test('route planner can warm its computation path before accepting traffic', async () => {
+  await assert.doesNotReject(RouteService.warmPlanning());
+});
+
 test('priority-queue Dijkstra follows mobile nodes and supports transfers', async () => {
   const fastest = await RouteService.planRoute('Bogor', 'Tangerang', 1, 'FASTEST');
   const minimumTransfers = await RouteService.planRoute(

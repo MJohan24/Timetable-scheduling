@@ -21,9 +21,11 @@ lalu sesuaikan `--base` di terminal kedua. Tidak perlu mengubah `.env`.
 npm run benchmark -- --base http://127.0.0.1:3000/api/v1 --rounds 5
 ```
 
-Enam skenario diuji berurutan: daftar stasiun (limit 200), pencarian stasiun,
-rute langsung Bogor-Jakarta Kota, pindah jalur Cikini-BNI City, berjalan kaki
-Cikoko-Tebet, dan jadwal KRL Manggarai (limit 100, hari kerja).
+Enam skenario diuji berurutan: daftar stasiun, pencarian stasiun, rute langsung,
+rute pindah jalur, rute dengan transfer berjalan kaki, dan jadwal KRL. Setiap
+putaran merotasi tiga input valid, termasuk page/limit, kata pencarian, rentang
+waktu, jumlah penumpang, preferensi, serta pasangan stasiun. Matriks rute mencakup
+Dukuh Atas-Cawang dan Cikoko-Tebet; benchmark tidak mengandalkan satu URL cache.
 Tidak ada pemesanan, perubahan database, panggilan AI, atau pembayaran.
 Pemeriksaan membutuhkan katalog dan dataset yang sudah diimpor; benchmark
 tidak menjalankan seed/migration.
@@ -34,15 +36,17 @@ Mode berulang sampai dihentikan:
 npm run benchmark -- --base http://127.0.0.1:3000/api/v1 --continuous
 ```
 
-Mode ini memberi jeda minimal 10 detik antar-request, menyimpan laporan setiap
-batch 5 putaran, lalu mengosongkan sampel di memori. Ctrl+C menyimpan batch parsial.
+Mode ini memakai jeda default 12 detik antar-request (minimal 10 detik), menyimpan
+laporan setiap batch 5 putaran, lalu mengosongkan sampel di memori. Setiap baris
+terminal menampilkan waktu HTTP lengkap dan fase server yang tersedia. Ctrl+C
+menyimpan batch parsial.
 Rate limit backend tetap 100 request per 15 menit; HTTP 429 menghentikan benchmark
 tanpa retry atau bypass. Request lain dari IP sama masih dapat menghabiskan kuota.
 Pengujian juga berhenti pada masalah koneksi/timeout agar tidak terus membebani
 layanan bermasalah. Jangan menjalankan mode berulang tanpa pengawasan.
 
 Opsi: `--rounds`, `--threshold` (ms), `--interval` (ms), `--timeout` (ms), `--out`.
-Default: 5 putaran, batas 200 ms, jeda 1 detik (10 detik untuk mode berulang),
+Default: 5 putaran, batas 200 ms, jeda 1 detik (12 detik untuk mode berulang),
 timeout 15 detik, dan satu request aktif. Mode terbatas default menghasilkan
 30 request. Exit code 0 berarti seluruh sampel dalam batch lengkap lolos;
 1 berarti lambat, gagal, atau tidak selesai; 2 berarti masalah konfigurasi/script.
@@ -56,13 +60,15 @@ Dalam mode berulang, kegagalan batch sebelumnya tetap membuat exit code 1.
 - `handler`: waktu server dari middleware hingga pemanggilan `res.json`, termasuk
   menunggu database. Tidak termasuk serialisasi JSON dan pengiriman body. Ini
   wall time, bukan pengukuran CPU per-request.
-- `station_query`: query katalog stasiun dan relasi beserta hitungan total.
-- `station_lookup` / `graph_load`: resolusi kedua stasiun / pembacaan graf rute.
+- `station_query`: filter dan pagination katalog stasiun yang sudah dimuat saat startup.
+- `station_lookup` / `graph_load`: resolusi kedua stasiun / akses read model graf rute.
 - `dijkstra`: membentuk adjacency, pencarian shortest path, rekonstruksi path.
   Tidak termasuk query database, penyusunan timeline, dan serialisasi respons.
-- `schedule_catalog`: lookup stasiun dan dataset aktif.
-- `schedule_query`: query jadwal, relasi, dan hitungan total.
-- `schedule_format`: pembuatan DTO jadwal, termasuk query aturan peron existing.
+- `route_format`: penyusunan urutan stasiun, langkah perjalanan, tarif, dan DTO rute.
+- `schedule_catalog`: resolusi stasiun dan read model dataset aktif.
+- `schedule_query`: filter kalender, rentang waktu, dan pagination index jadwal di memori.
+- `schedule_format`: fase kompatibilitas untuk deployment lama yang masih membentuk
+  jadwal dan mencari aturan Peron pada jalur request.
 
 Rincian server dikirim melalui `Server-Timing` hanya ketika
 `PERFORMANCE_METRICS=true`; payload mobile tetap sama. Fase berada di dalam waktu
@@ -76,6 +82,20 @@ error tetap dihitung dan menggagalkan hasil. Sampel pertama tetap disertakan.
 `firstMs` bukan bukti cold start: database mungkin sudah aktif.
 P95 pada hanya 5 sampel sama dengan maksimum; gunakan pengujian lebih panjang
 yang menghormati rate limit untuk kesimpulan yang lebih kuat.
+
+Backend memuat katalog stasiun, graf rute, dan timetable aktif sebelum membuka
+port. Jika warm-up gagal, proses tidak membuka port dan endpoint readiness tidak
+menyatakan service siap. Read model timetable berisi data publik dan setiap 60
+detik diperiksa terhadap identitas dan fingerprint penuh timetable serta aturan
+Peron, dan tanggal Jakarta. Perubahan mengganti snapshot secara atomik; request
+tetap memakai snapshot sebelumnya jika refresh gagal. Akun, tiket, pembayaran,
+dan data pengguna tidak disimpan di read model.
+
+Untuk demonstrasi, simpan dua laporan terpisah. Jalankan satu batch segera setelah
+deploy atau service aktif kembali, lalu jalankan mode `--continuous` saat service
+sudah aktif. Jangan menghapus laporan pertama. Penilaian kondisi “sistem running”
+memakai laporan kedua, sedangkan laporan pertama menjelaskan biaya startup dan
+pengisian cache.
 
 Laporan tersimpan di `reports/performance/` (diabaikan Git). Setiap batch punya
 nama unik, tidak menimpa laporan lama. Mode berulang tetap menambah file di disk;
@@ -117,3 +137,23 @@ benar, dan bandingkan deployment backend/database dalam lokasi yang berdekatan.
 Setelah setiap perubahan, ulangi skenario/payload yang sama dan simpan hasil
 sebelum-sesudah. Jangan mengganti data dengan dummy atau hanya melaporkan waktu
 Dijkstra untuk mengklaim respons keseluruhan memenuhi 200 ms.
+
+## Hasil lokal setelah optimasi: 1 September 2026 WIB
+
+Backend terbaru dijalankan lokal pada port 3101 dan tetap memakai database Neon.
+Matriks tiga variasi dijalankan dua kali (36 request) tanpa jeda. Identitas batch
+UTC: `2026-09-01T08-23-20-228Z-6efa0fd9`.
+
+| Skenario | Sampel | Rata-rata HTTP (ms) | Maksimum / p95 (ms) | >= 200 ms |
+|---|---:|---:|---:|---:|
+| Daftar stasiun | 6 | 10.649 | 40.081 | 0 |
+| Cari stasiun | 6 | 3.566 | 4.584 | 0 |
+| Rute langsung | 6 | 6.537 | 18.379 | 0 |
+| Rute pindah jalur | 6 | 4.816 | 5.687 | 0 |
+| Rute berjalan kaki | 6 | 3.593 | 4.636 | 0 |
+| Jadwal KRL | 6 | 3.901 | 4.647 | 0 |
+
+Semua 36 request berhasil, memuat data, dan berada di bawah 200 ms pada sampel
+lokal ini. Hasil tersebut membuktikan jalur komputasi backend lokal, tetapi belum
+membuktikan target di Render karena latensi jaringan dan perilaku instance Render
+harus diukur terpisah setelah commit ini dideploy.

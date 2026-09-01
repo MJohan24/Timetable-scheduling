@@ -6,8 +6,9 @@ import {
   publicCodeForLine,
   stationDisplayName,
 } from '../../domain/services/stationIdentity';
-import { resolvePlatformRule } from '../../domain/services/platformRuleService';
 import { beginTiming, measurePhase } from '../../infrastructure/observability/requestTiming';
+import { findStationInCatalog, getStationCatalog } from '../../domain/services/stationCatalogService';
+import { getTimetableReadModel, queryTimetableReadModel } from '../../domain/services/timetableReadModel';
 
 const querySchema = z.object({
   stationId: z.string().uuid().optional(),
@@ -41,100 +42,61 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
     }
     const { stationId, station, trainType, isWeekend, departureFrom, departureTo, page, limit } = parsed.data;
     const finishCatalog = beginTiming('schedule_catalog');
-    const timetableStation = await prisma.station.findFirst({
-      where: stationId
-        ? { id: stationId }
-        : {
-            OR: [
-              { slug: station!.toLowerCase() },
-              { operationalCode: { equals: station!, mode: 'insensitive' } },
-              { name: { equals: station!, mode: 'insensitive' } },
-              { officialName: { equals: station!, mode: 'insensitive' } },
-              { aliases: { some: { normalized: normalize(station!) } } },
-              { publicCodes: { some: { code: { equals: station! } } } },
-            ],
-          },
-    });
-    const activeDataset =
-      timetableStation?.isKrl && trainType !== 'LRT' && trainType !== 'MRT'
-        ? await prisma.timetableDataset.findFirst({ where: { isActive: true } })
-        : null;
+    const [catalog, readModel] = await Promise.all([
+      getStationCatalog(),
+      trainType !== 'LRT' && trainType !== 'MRT' ? getTimetableReadModel() : null,
+    ]);
+    const timetableStation = findStationInCatalog(catalog, stationId ?? station!);
     finishCatalog();
 
-    if (timetableStation && activeDataset) {
-      const stopWhere = {
-        stationId: timetableStation.id,
-        isPassThrough: false,
-        departureMinute: {
-          not: null,
-          ...(departureFrom ? { gte: toMinute(departureFrom) } : {}),
-          ...(departureTo ? { lte: toMinute(departureTo) } : {}),
+    const expectsCommuterTimetable = timetableStation?.isKrl
+      && trainType !== 'LRT'
+      && trainType !== 'MRT';
+    if (expectsCommuterTimetable && !readModel) {
+      throw new ApiError(503, 'Commuter timetable is unavailable.', 'TIMETABLE_UNAVAILABLE');
+    }
+
+    if (expectsCommuterTimetable && readModel) {
+      const result = await measurePhase('schedule_query', async () => queryTimetableReadModel(
+        readModel,
+        timetableStation.id,
+        {
+          isWeekend: isWeekend === 'true',
+          departureFromMinute: departureFrom ? toMinute(departureFrom) : undefined,
+          departureToMinute: departureTo ? toMinute(departureTo) : undefined,
+          page,
+          limit,
         },
-        service: {
-          datasetId: activeDataset.id,
-          calendar: { code: { in: isWeekend === 'true' ? ['DAILY'] : ['DAILY', 'WEEKDAY'] } },
-        },
-      } as const;
-      const [departures, total] = await measurePhase('schedule_query', () => prisma.$transaction([
-        prisma.trainStopTime.findMany({
-          where: stopWhere,
-          include: {
-            service: {
-              include: {
-                calendar: { select: { code: true } },
-                stops: {
-                  where: { arrivalMinute: { not: null } },
-                  orderBy: { sequence: 'asc' },
-                  select: {
-                    arrivalMinute: true,
-                    station: { select: { name: true, officialName: true } },
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { departureMinute: 'asc' },
-          skip: (page - 1) * limit,
-          take: limit,
-        }),
-        prisma.trainStopTime.count({ where: stopWhere }),
-      ]));
+      ));
       res.json({
         success: true,
-        data: await measurePhase('schedule_format', () => Promise.all(departures.map(async ({ service, departureMinute }) => {
-          const first = service.stops[0];
-          const last = service.stops.at(-1);
-          const display = (value: typeof first | undefined) => value?.station.officialName ?? value?.station.name ?? '';
-          const destination = display(last);
-          const platformRule = await resolvePlatformRule(prisma, {
-            stationId: timetableStation.id,
-            lineSlug: service.lineSlug,
-            direction: service.direction,
-            destination,
-          });
-          return {
-            id: service.id,
-            trainName: `KA ${service.trainNumber}`,
-            trainNumber: service.trainNumber,
-            continuationTrainNumber: service.continuationTrainNumber,
-            route: `${display(first)} - ${display(last)}`,
-            departureTime: formatMinute(departureMinute!),
-            arrivalTime: formatMinute(last?.arrivalMinute ?? departureMinute!),
-            dayOffset: Math.floor((departureMinute ?? 0) / 1440),
-            platform: platformRule?.platform ?? '',
-            trainType: 'KRL',
-            isWeekend: isWeekend === 'true',
-            calendarCode: service.calendar.code,
-            lineSlug: service.lineSlug,
-            station: {
-              id: timetableStation.id,
-              slug: timetableStation.slug,
-              name: stationDisplayName(timetableStation),
-              operationalCode: timetableStation.operationalCode,
-            },
-          };
-        }))),
-        meta: { page, limit, total, datasetVersion: activeDataset.version },
+        data: result.departures.map((departure) => ({
+          id: departure.id,
+          trainName: `KA ${departure.trainNumber}`,
+          trainNumber: departure.trainNumber,
+          continuationTrainNumber: departure.continuationTrainNumber,
+          route: departure.route,
+          departureTime: formatMinute(departure.departureMinute),
+          arrivalTime: formatMinute(departure.arrivalMinute),
+          dayOffset: Math.floor(departure.departureMinute / 1440),
+          platform: departure.platform,
+          trainType: 'KRL',
+          isWeekend: isWeekend === 'true',
+          calendarCode: departure.calendarCode,
+          lineSlug: departure.lineSlug,
+          station: {
+            id: timetableStation.id,
+            slug: timetableStation.slug,
+            name: stationDisplayName(timetableStation),
+            operationalCode: timetableStation.operationalCode,
+          },
+        })),
+        meta: {
+          page,
+          limit,
+          total: result.total,
+          datasetVersion: readModel.datasetVersion,
+        },
       });
       return;
     }
