@@ -7,8 +7,15 @@ import {
 } from '../../domain/services/assistantService';
 import { VisionService } from '../../domain/services/visionService';
 
+const assistantHistoryTurnSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  text: z.string().trim().min(1).max(1000),
+});
+
 export const assistantMessageSchema = z.object({
   message: z.string().trim().min(1).max(1000),
+  history: z.array(assistantHistoryTurnSchema).max(6).default([]),
+  lang: z.string().trim().min(2).max(8).optional(),
 });
 
 const assistantService = new AssistantService();
@@ -26,8 +33,14 @@ export const askAssistant = async (
   }
 
   try {
-    const reply = await assistantService.reply(parsed.data.message);
-    res.json({ success: true, data: { reply } });
+    const result = await assistantService.reply(parsed.data.message, parsed.data.history, parsed.data.lang);
+    res.json({
+      success: true,
+      data: {
+        reply: result.text,
+        ...(result.route ? { route: result.route } : {}),
+      },
+    });
   } catch (error) {
     if (error instanceof AssistantProviderError) {
       const status = error.code === 'AI_NOT_CONFIGURED' ? 503 : 502;

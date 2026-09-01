@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../../infrastructure/database/prismaClient';
 import { ApiError } from '../../domain/errors/ApiError';
+import { measurePhase } from '../../infrastructure/observability/requestTiming';
 import {
   publicCodeForLine,
   stationDisplayName,
@@ -105,7 +106,7 @@ export const getStations = async (req: Request, res: Response, next: NextFunctio
           }
         : {}),
     };
-    const [stations, total] = await prisma.$transaction([
+    const [stations, total] = await measurePhase('station_query', () => prisma.$transaction([
       prisma.station.findMany({
         where,
         include: stationInclude,
@@ -114,7 +115,7 @@ export const getStations = async (req: Request, res: Response, next: NextFunctio
         take: limit,
       }),
       prisma.station.count({ where }),
-    ]);
+    ]));
     res.json({
       success: true,
       data: stations.map(stationDto),

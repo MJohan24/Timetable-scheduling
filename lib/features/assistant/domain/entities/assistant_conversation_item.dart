@@ -19,6 +19,8 @@ class AssistantConversationItem {
     required this.kind,
     required this.text,
     this.alarmSnapshot,
+    this.routeFrom,
+    this.routeTo,
   });
 
   final int id;
@@ -26,4 +28,6 @@ class AssistantConversationItem {
   final AssistantConversationItemKind kind;
   final String text;
   final TravelAlarmState? alarmSnapshot;
+  final String? routeFrom;
+  final String? routeTo;
 }

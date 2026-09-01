@@ -24,7 +24,7 @@ class AssistantConversationTimeline extends StatelessWidget {
   final VoidCallback onViewTicket;
   final VoidCallback onCancelAlarm;
   final VoidCallback onFindTrip;
-  final VoidCallback onConfirmRoute;
+  final void Function(String from, String to) onConfirmRoute;
   final VoidCallback onRepeatRoute;
   final VoidCallback onCancelRoute;
 
@@ -95,15 +95,80 @@ class AssistantConversationTimeline extends StatelessWidget {
             AssistantConversationItemKind.routeSuggestion =>
               _RouteSuggestionMessage(
                 message: item.text,
-                onConfirm: onConfirmRoute,
+                onConfirm: () => onConfirmRoute('Setiabudi', 'Manggarai'),
                 onRepeat: onRepeatRoute,
                 onCancel: onCancelRoute,
               ),
-            AssistantConversationItemKind.message => _MessageBubble(
-              text: item.text,
-              isUser: !isAssistant,
-            ),
+            AssistantConversationItemKind.message =>
+              item.routeFrom != null && item.routeTo != null
+                  ? _RouteAnswerMessage(
+                      text: item.text,
+                      routeFrom: item.routeFrom!,
+                      routeTo: item.routeTo!,
+                      onConfirmRoute: onConfirmRoute,
+                    )
+                  : _MessageBubble(
+                      text: item.text,
+                      isUser: !isAssistant,
+                    ),
           },
+        ],
+      ),
+    );
+  }
+}
+
+class _RouteAnswerMessage extends StatelessWidget {
+  const _RouteAnswerMessage({
+    required this.text,
+    required this.routeFrom,
+    required this.routeTo,
+    required this.onConfirmRoute,
+  });
+
+  final String text;
+  final String routeFrom;
+  final String routeTo;
+  final void Function(String from, String to) onConfirmRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => onConfirmRoute(routeFrom, routeTo),
+              icon: const Icon(Icons.route_rounded),
+              label: Text(l10n.assistantUseThisRoute),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.textOnPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

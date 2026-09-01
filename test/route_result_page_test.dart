@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timetable/core/theme/app_theme.dart';
 import 'package:timetable/features/route_result/domain/entities/route_plan.dart';
 import 'package:timetable/features/route_result/domain/repositories/route_repository.dart';
 import 'package:timetable/features/route_result/domain/services/route_speech_service.dart';
@@ -35,7 +38,16 @@ class _Speech implements RouteSpeechService {
   Future<void> stop() async {}
 }
 
-Widget _page(RouteController controller) => MaterialApp(
+Widget _page(RouteController controller, {double textScale = 1}) => MaterialApp(
+  theme: AppTheme.lightTheme,
+  debugShowCheckedModeBanner: false,
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(
+      textScaler: TextScaler.linear(textScale),
+      padding: const EdgeInsets.only(top: 24, bottom: 24),
+    ),
+    child: child!,
+  ),
   locale: const Locale('id'),
   localizationsDelegates: const [
     AppLocalizations.delegate,
@@ -83,7 +95,108 @@ RoutePlan _route(List<RouteStation> stations) => RoutePlan(
   exitGateB: 'Area antar-jemput',
 );
 
+RouteStation _mapStation(String code, String lineId) {
+  final station = stations.firstWhere((station) => station.code == code);
+  final line = transitLines.firstWhere((line) => line.id == lineId);
+  return RouteStation(
+    stationId: station.id,
+    name: stationSelectionName(station),
+    nodeCode: code,
+    line: RouteLine(
+      id: line.id,
+      slug: line.id,
+      name: line.name,
+      color: line.color.toARGB32().toRadixString(16),
+      serviceType: 'KRL',
+    ),
+  );
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    // Match Android font metrics; Flutter's Ahem test font exaggerates text widths.
+    final fonts = FontLoader('Roboto');
+    for (final weight in ['regular', 'medium', 'bold', 'black']) {
+      fonts.addFont(
+        File(
+          '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts/roboto-$weight.ttf',
+        ).readAsBytes().then(ByteData.sublistView),
+      );
+    }
+    await fonts.load();
+    final icons = FontLoader('MaterialIcons')
+      ..addFont(
+        File(
+          '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts/materialicons-regular.otf',
+        ).readAsBytes().then(ByteData.sublistView),
+      );
+    await icons.load();
+  });
+  for (final (size, textScale) in [
+    (const Size(320, 640), 1.0),
+    (const Size(390, 844), 1.0),
+    (const Size(390, 844), 1.3),
+  ]) {
+    testWidgets(
+      'map FAB never covers ticket action at $size, text scale $textScale',
+      (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final controller = RouteController(
+          _Repository(() async => testRoute),
+          _Speech(),
+        );
+        addTearDown(controller.dispose);
+        await tester.pumpWidget(_page(controller, textScale: textScale));
+        await tester.pumpAndSettle();
+        final mapButton = find.byKey(const Key('journey-map-preview-button'));
+        final buyButton = find.widgetWithText(
+          ElevatedButton,
+          'Beli Tiket Langsung (Rp10.000)',
+        );
+        await tester.scrollUntilVisible(buyButton, 200);
+        await tester.pumpAndSettle();
+        expect(
+          tester.getRect(mapButton).overlaps(tester.getRect(buyButton)),
+          isFalse,
+        );
+        expect(buyButton.hitTestable(), findsOneWidget);
+        expect(
+          tester.widget<FloatingActionButton>(mapButton).isExtended,
+          isFalse,
+        );
+        expect(find.byTooltip('Lihat Line di Peta'), findsOneWidget);
+        expect(tester.getSize(mapButton), const Size(56, 56));
+        final beforeScroll = tester.getRect(buyButton);
+        await tester.drag(find.byType(ListView), const Offset(0, 300));
+        await tester.pumpAndSettle();
+        expect(tester.getRect(buyButton), beforeScroll);
+        expect(
+          tester.getRect(mapButton).overlaps(tester.getRect(buyButton)),
+          isFalse,
+        );
+        expect(tester.takeException(), isNull);
+        if (const bool.fromEnvironment('CAPTURE_ROUTE_LAYOUT')) {
+          final shadowsDisabled = debugDisableShadows;
+          debugDisableShadows = false;
+          try {
+            await tester.pumpWidget(_page(controller, textScale: textScale));
+            await tester.pumpAndSettle();
+            await expectLater(
+              find.byType(MaterialApp),
+              matchesGoldenFile(
+                '../build/route-layout-${size.width.toInt()}-$textScale.png',
+              ),
+            );
+          } finally {
+            debugDisableShadows = shadowsDisabled;
+          }
+        }
+      },
+    );
+  }
+
   testWidgets('route page renders loading and exact retry error', (
     tester,
   ) async {
@@ -290,6 +403,98 @@ void main() {
       mapRouteSegmentKey('bogor', 'B11', 'B10'),
     });
   });
+
+  test('backend route continues after a merged Kampung Bandan transfer', () {
+    final sequence = [
+      _mapStation('C10', 'cikarang_loop'),
+      _mapStation('C09', 'cikarang_loop'),
+      _mapStation('C08', 'cikarang_loop'),
+      _mapStation('C07', 'cikarang_loop'),
+      _mapStation('TP01', 'tanjung_priok'),
+    ];
+    final expected = {
+      mapRouteSegmentKey('cikarang_loop', 'C10', 'C09'),
+      mapRouteSegmentKey('cikarang_loop', 'C09', 'C08'),
+      mapRouteSegmentKey('cikarang_loop', 'C08', 'wp_kb_left'),
+      mapRouteSegmentKey('cikarang_loop', 'wp_kb_left', 'wp_kb_top'),
+      mapRouteSegmentKey('cikarang_loop', 'wp_kb_top', 'C07'),
+      mapRouteSegmentKey('tanjung_priok', 'TP02', 'TP01'),
+    };
+    expect(routeMapSegmentIds(_route(sequence)), expected);
+    expect(routeMapSegmentIds(_route(sequence.reversed.toList())), expected);
+  });
+
+  test('Jatinegara loop closure uses only the adjacent Matraman branch', () {
+    final sequence = [
+      _mapStation('C14', 'cikarang_loop'),
+      _mapStation('C15', 'cikarang_loop'),
+    ];
+    final expected = {
+      mapRouteSegmentKey('cikarang_loop', 'C14', 'wp_cikarang_jatinegara'),
+      mapRouteSegmentKey('cikarang_loop', 'wp_cikarang_jatinegara', 'C15'),
+    };
+    expect(routeMapSegmentIds(_route(sequence)), expected);
+    expect(routeMapSegmentIds(_route(sequence.reversed.toList())), expected);
+  });
+
+  test(
+    'Jakarta Kota to Cipete highlights only the rail legs returned by API',
+    () {
+      // Actual API route: Bogor -> walk Cawang/Cikoko -> LRT Bekasi ->
+      // walk Setiabudi/Setiabudi Astra -> MRT. Walking must not add rail edges.
+      final route = _route([
+        for (final code in [
+          'B01',
+          'B02',
+          'B03',
+          'B04',
+          'B05',
+          'B07',
+          'B08',
+          'B09',
+          'B10',
+          'B11',
+        ])
+          _mapStation(code, 'bogor'),
+        for (final code in ['BK06', 'BK05', 'BK04', 'BK03', 'BK02'])
+          _mapStation(code, 'lrt_bekasi'),
+        for (final code in [
+          'M11',
+          'M10',
+          'M09',
+          'M08',
+          'M07',
+          'M06',
+          'M05',
+          'M04',
+          'M03',
+        ])
+          _mapStation(code, 'mrt'),
+      ]);
+      final expected = <String>{};
+      for (final leg in [
+        ('bogor', 'jakarta_kota_bk', 'cawang_krl'),
+        ('lrt_bekasi', 'setiabudi_lrt_bk', 'cikoko_bk'),
+        ('mrt', 'setiabudi', 'cipete_raya'),
+      ]) {
+        final ids = transitLines
+            .firstWhere((line) => line.id == leg.$1)
+            .stationIds;
+        for (var i = ids.indexOf(leg.$2); i < ids.indexOf(leg.$3); i++) {
+          final from = stations.firstWhere((station) => station.id == ids[i]);
+          final to = stations.firstWhere((station) => station.id == ids[i + 1]);
+          expected.add(
+            mapRouteSegmentKey(
+              leg.$1,
+              mapSegmentNodeIdentity(from),
+              mapSegmentNodeIdentity(to),
+            ),
+          );
+        }
+      }
+      expect(routeMapSegmentIds(route), expected);
+    },
+  );
 
   test('walking transfer does not highlight a rail segment across Cikoko', () {
     const route = RoutePlan(

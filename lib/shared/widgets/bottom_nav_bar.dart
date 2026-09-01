@@ -77,9 +77,6 @@ class AppBottomNavBar extends StatelessWidget {
       padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: const Border(
-          top: BorderSide(color: AppColors.primaryPurple, width: 2),
-        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -133,25 +130,47 @@ class _NavItem extends StatelessWidget {
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            alignment: Alignment.topCenter,
             children: [
-              Icon(
-                isActive ? activeIcon : icon,
-                color: isActive ? AppColors.primaryBlue : AppColors.textHint,
-                size: 24,
-              ),
-              const SizedBox(height: 5),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                  color: isActive ? AppColors.primaryBlue : AppColors.textHint,
-                  letterSpacing: 0.1,
+              if (isActive)
+                const Positioned(
+                  top: 0,
+                  width: 32,
+                  height: 3,
+                  child: DecoratedBox(
+                    key: ValueKey('bottom-nav-active-indicator'),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryPurple,
+                      borderRadius: BorderRadius.all(Radius.circular(2)),
+                    ),
+                  ),
                 ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isActive ? activeIcon : icon,
+                    color: isActive
+                        ? AppColors.primaryBlue
+                        : AppColors.textHint,
+                    size: 24,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                      color: isActive
+                          ? AppColors.primaryBlue
+                          : AppColors.textHint,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

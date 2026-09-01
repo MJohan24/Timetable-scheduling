@@ -63,27 +63,37 @@ class _RouteResultPageState extends State<RouteResultPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListenableBuilder(
-                listenable: _controller,
-                builder: (context, _) => switch (_controller.state) {
-                  RouteViewState.initial || RouteViewState.loading =>
-                    const Center(child: CircularProgressIndicator()),
-                  RouteViewState.error => _RouteError(
-                    message: AppLocalizations.of(context)!.routeLoadError,
-                    onRetry: _controller.retry,
-                  ),
-                  RouteViewState.success => _RouteContent(
-                    controller: _controller,
-                    route: _controller.route!,
-                  ),
-                },
-              ),
+        bottom: false,
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) => switch (_controller.state) {
+            RouteViewState.initial || RouteViewState.loading => const Center(
+              child: CircularProgressIndicator(),
             ),
-            const AppBottomNavBar(currentIndex: 0),
-          ],
+            RouteViewState.error => _RouteError(
+              message: AppLocalizations.of(context)!.routeLoadError,
+              onRetry: _controller.retry,
+            ),
+            RouteViewState.success => _RouteContent(
+              controller: _controller,
+              route: _controller.route!,
+            ),
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        bottom: false,
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_controller.state == RouteViewState.success)
+                _RoutePurchaseButton(route: _controller.route!),
+              const AppBottomNavBar(currentIndex: 0),
+            ],
+          ),
         ),
       ),
       floatingActionButton: ListenableBuilder(
@@ -95,14 +105,12 @@ class _RouteResultPageState extends State<RouteResultPage> {
               route != null &&
               route.lineSlugs.isNotEmpty;
           if (!canPreview) return const SizedBox.shrink();
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 80),
-            child: FloatingActionButton.extended(
-              key: const Key('journey-map-preview-button'),
-              onPressed: () => context.push('/rute/peta', extra: route),
-              icon: const Icon(Icons.map_rounded),
-              label: Text(AppLocalizations.of(context)!.routeShowLineMap),
-            ),
+          return FloatingActionButton(
+            key: const Key('journey-map-preview-button'),
+            tooltip: AppLocalizations.of(context)!.routeShowLineMap,
+            onPressed: () => context.push('/rute/peta', extra: route),
+            shape: const CircleBorder(),
+            child: const Icon(Icons.map_rounded),
           );
         },
       ),
@@ -157,21 +165,71 @@ class _RouteError extends StatelessWidget {
   );
 }
 
+String _formatFare(int fare) =>
+    'Rp${fare.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
+
+class _RoutePurchaseButton extends StatelessWidget {
+  const _RoutePurchaseButton({required this.route});
+  final RoutePlan route;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => context.go(
+          Uri(
+            path: '/tiket',
+            queryParameters: {
+              'from': route.from,
+              'to': route.to,
+              'fare': '${route.fare}',
+              'duration': '${route.travelTime}',
+              'transit': route.hasTransit ? '1' : '0',
+            },
+          ).toString(),
+        ),
+        icon: const Icon(Icons.confirmation_num_rounded),
+        label: Text(
+          AppLocalizations.of(
+            context,
+          )!.buyTicketDirect(_formatFare(route.fare)),
+          textAlign: TextAlign.center,
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.buttonOrange,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _RouteContent extends StatelessWidget {
   const _RouteContent({required this.controller, required this.route});
 
   final RouteController controller;
   final RoutePlan route;
 
-  String get _formattedFare =>
-      'Rp${route.fare.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
+  String get _formattedFare => _formatFare(route.fare);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      // Let the last card scroll above the 56 dp FAB and its 16 dp margins.
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        route.lineSlugs.isEmpty ? 24 : 88,
+      ),
       children: [
         _header(context, l10n),
         const SizedBox(height: 20),
@@ -186,31 +244,6 @@ class _RouteContent extends StatelessWidget {
         _timeline(l10n),
         const SizedBox(height: 16),
         _exitGates(l10n),
-        const SizedBox(height: 20),
-        ElevatedButton.icon(
-          onPressed: () => context.go(
-            Uri(
-              path: '/tiket',
-              queryParameters: {
-                'from': route.from,
-                'to': route.to,
-                'fare': '${route.fare}',
-                'duration': '${route.travelTime}',
-                'transit': route.hasTransit ? '1' : '0',
-              },
-            ).toString(),
-          ),
-          icon: const Icon(Icons.confirmation_num_rounded),
-          label: Text(l10n.buyTicketDirect(_formattedFare)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.buttonOrange,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-        ),
       ],
     );
   }

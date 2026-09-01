@@ -1849,20 +1849,29 @@ class SchematicMapPainter extends CustomPainter {
   // ── DRAW LINES ──────────────────────────────────────────────────
 
   void _drawLines(Canvas canvas) {
+    final activePaths = <(Path, Color, double)>[];
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
     for (final line in transitLines) {
       final bool isVisible =
           visibleLineIds == null || visibleLineIds!.contains(line.id);
-      final segmentMode = highlightedSegmentIds != null;
-      final paint = Paint()
-        ..color = segmentMode
-            ? const Color(0xFFCDD1DB)
-            : isVisible
-            ? (showColors ? line.color : line.color.withValues(alpha: 0.85))
-            : line.color.withValues(alpha: 0.08)
-        ..strokeWidth = line.strokeWidth
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round;
+      final activeColor = showColors
+          ? line.color
+          : line.color.withValues(alpha: 0.85);
+      final inactiveColor = highlightedSegmentIds != null
+          ? const Color(0xFFCDD1DB)
+          : line.color.withValues(alpha: 0.08);
+      paint.strokeWidth = line.strokeWidth;
+      void drawRun(Path path, Color color) {
+        // Paint each segment once, with inactive crossings underneath the route.
+        if (highlightedSegmentIds != null && color == activeColor) {
+          activePaths.add((path, color, line.strokeWidth));
+        } else {
+          canvas.drawPath(path, paint..color = color);
+        }
+      }
 
       final lineStations = <StationData>[];
       for (final stationId in line.stationIds) {
@@ -1870,29 +1879,43 @@ class SchematicMapPainter extends CustomPainter {
         if (station != null) lineStations.add(station);
       }
       final points = lineStations.map((station) => station.position).toList();
-      _drawRoundedPath(canvas, points, paint);
-
-      if (highlightedSegmentIds == null) continue;
-      final highlightPaint = Paint()
-        ..color = showColors ? line.color : line.color.withValues(alpha: 0.95)
-        ..strokeWidth = line.strokeWidth + 2
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round;
-      for (var index = 0; index < lineStations.length - 1; index++) {
+      var path = Path();
+      var index = 0;
+      Color? previousColor;
+      // Render each existing edge once; join equal-status edges into one stroke.
+      for (final segment in _roundedPathSegments(points)) {
         final from = lineStations[index];
         final to = lineStations[index + 1];
-        if (!highlightedSegmentIds!.contains(
-          mapRouteSegmentKey(
-            line.id,
-            mapSegmentNodeIdentity(from),
-            mapSegmentNodeIdentity(to),
-          ),
-        )) {
-          continue;
+        final active =
+            isVisible &&
+            (highlightedSegmentIds == null ||
+                highlightedSegmentIds!.contains(
+                  mapRouteSegmentKey(
+                    line.id,
+                    mapSegmentNodeIdentity(from),
+                    mapSegmentNodeIdentity(to),
+                  ),
+                ));
+        final color = active ? activeColor : inactiveColor;
+        if (previousColor != null && color != previousColor) {
+          drawRun(path, previousColor);
+          path = Path();
         }
-        _drawRoundedPath(canvas, [from.position, to.position], highlightPaint);
+        path.extendWithPath(segment, Offset.zero);
+        previousColor = color;
+        index++;
       }
+      if (previousColor != null) {
+        drawRun(path, previousColor);
+      }
+    }
+    for (final (path, color, width) in activePaths) {
+      canvas.drawPath(
+        path,
+        paint
+          ..color = color
+          ..strokeWidth = width,
+      );
     }
   }
 
@@ -1932,15 +1955,14 @@ class SchematicMapPainter extends CustomPainter {
     }
   }
 
-  /// Menggambar path dengan sudut rounded (quadratic bezier di setiap belokan)
-  void _drawRoundedPath(
-    Canvas canvas,
-    List<Offset> points,
-    Paint paint, {
+  /// Split the original rounded path at each node's curve midpoint so a change
+  /// of edge color never replaces a bend with a straight station-to-station line.
+  Iterable<Path> _roundedPathSegments(
+    List<Offset> points, {
     double cornerRadius = 45,
-  }) {
+  }) sync* {
     if (points.length < 2) return;
-    final path = Path();
+    var path = Path();
     path.moveTo(points[0].dx, points[0].dy);
 
     for (int i = 1; i < points.length - 1; i++) {
@@ -1960,6 +1982,8 @@ class SchematicMapPainter extends CustomPainter {
 
       if (r < 2 || dot.abs() > 0.99) {
         path.lineTo(p1.dx, p1.dy);
+        yield path;
+        path = Path()..moveTo(p1.dx, p1.dy);
       } else {
         final before = Offset(
           p1.dx - d1.dx / len1 * r,
@@ -1969,12 +1993,30 @@ class SchematicMapPainter extends CustomPainter {
           p1.dx + d2.dx / len2 * r,
           p1.dy + d2.dy / len2 * r,
         );
+        // De Casteljau subdivision preserves the exact quadratic curve.
+        final firstControl = (before + p1) / 2;
+        final secondControl = (p1 + after) / 2;
+        final midpoint = (firstControl + secondControl) / 2;
         path.lineTo(before.dx, before.dy);
-        path.quadraticBezierTo(p1.dx, p1.dy, after.dx, after.dy);
+        path.quadraticBezierTo(
+          firstControl.dx,
+          firstControl.dy,
+          midpoint.dx,
+          midpoint.dy,
+        );
+        yield path;
+        path = Path()
+          ..moveTo(midpoint.dx, midpoint.dy)
+          ..quadraticBezierTo(
+            secondControl.dx,
+            secondControl.dy,
+            after.dx,
+            after.dy,
+          );
       }
     }
     path.lineTo(points.last.dx, points.last.dy);
-    canvas.drawPath(path, paint);
+    yield path;
   }
 
   // ── DRAW LANDMARKS ──────────────────────────────────────────────
@@ -2844,6 +2886,10 @@ class SchematicMapPainter extends CustomPainter {
       switch (pos) {
         case LabelPos.top:
           labelX = station.position.dx - (textPainter.width / 2);
+          // Keep Sudirman clear of the MRT line immediately to its left.
+          if (station.id == 'sudirman') {
+            labelX = max(labelX, station.position.dx - 16);
+          }
           labelY = station.position.dy - textPainter.height - labelOffset;
           break;
         case LabelPos.bottom:
@@ -2931,7 +2977,7 @@ class SchematicMapPainter extends CustomPainter {
       'cikarang': LabelPos.topRotated,
       // Cikarang horizontal band (y=700) → bottom
       'tanah_abang': LabelPos.left,
-      'karet': LabelPos.bottom, 'sudirman': LabelPos.right,
+      'karet': LabelPos.bottom, 'sudirman': LabelPos.top,
       // Tanjung Priok → topRotated
       'ancol': LabelPos.topRotated, 'jis': LabelPos.topRotated,
       'tanjung_priok': LabelPos.top,
@@ -2999,7 +3045,7 @@ class SchematicMapPainter extends CustomPainter {
     // Daftar badge: kode huruf, warna, posisi pada kanvas
     const badges = <_LineBadgeInfo>[
       // KRL Bogor (B) - di sebelah kiri Jakarta Kota, dekat Bogor, dan dekat Nambo
-      _LineBadgeInfo('B', AppColors.lineBogor, Offset(890.0, 264.0)),
+      _LineBadgeInfo('B', AppColors.lineBogor, Offset(870.0, 264.0)),
       _LineBadgeInfo('B', AppColors.lineBogor, Offset(2140.0, 2870.0)),
       _LineBadgeInfo('B', AppColors.lineBogor, Offset(2180.0, 2750.0)),
       // KRL Cikarang Loop (C) - di atas Jatinegara dan di bawah Cikarang
@@ -3012,7 +3058,7 @@ class SchematicMapPainter extends CustomPainter {
       _LineBadgeInfo('T', AppColors.lineTangerang, Offset(640.0, 675.0)),
       _LineBadgeInfo('T', AppColors.lineTangerang, Offset(-210.0, 705.0)),
       // KRL Tanjung Priok (TP) - di sebelah kiri Jakarta Kota & di atas Tanjung Priok
-      _LineBadgeInfo('TP', AppColors.lineTanjungPriok, Offset(940.0, 264.0)),
+      _LineBadgeInfo('TP', AppColors.lineTanjungPriok, Offset(920.0, 264.0)),
       _LineBadgeInfo('TP', AppColors.lineTanjungPriok, Offset(1750.0, 60.0)),
       // MRT Jakarta (M) - dekat Bundaran HI (atas kiri) & dekat Lebak Bulus (kiri)
       _LineBadgeInfo('M', AppColors.lineMRT, Offset(1020.0, 760.0)),

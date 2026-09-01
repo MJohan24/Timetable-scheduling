@@ -30,7 +30,7 @@ class AssistantConversationController extends ChangeNotifier {
       UnmodifiableListView(_items);
   bool get isSending => _isSending;
 
-  Future<void> submitText(String rawText) async {
+  Future<void> submitText(String rawText, {String? lang}) async {
     final text = rawText.trim();
     if (text.isEmpty) return;
 
@@ -44,7 +44,18 @@ class AssistantConversationController extends ChangeNotifier {
       _isSending = true;
       notifyListeners();
       try {
-        _appendAssistant(await chatRepository!.ask(text));
+        final answer = await chatRepository!.ask(
+          text,
+          history: _historyBeforeCurrent(),
+          lang: lang,
+        );
+        _append(
+          author: AssistantMessageAuthor.assistant,
+          kind: AssistantConversationItemKind.message,
+          text: answer.reply,
+          routeFrom: answer.routeFrom,
+          routeTo: answer.routeTo,
+        );
       } on Exception {
         _appendAssistant(copy.unavailable);
       } finally {
@@ -151,6 +162,29 @@ class AssistantConversationController extends ChangeNotifier {
     );
   }
 
+  List<AssistantChatTurn> _historyBeforeCurrent() {
+    final previous = _items
+        .take(_items.length - 1)
+        .where(
+          (item) =>
+              item.kind == AssistantConversationItemKind.message ||
+              item.kind == AssistantConversationItemKind.routeSuggestion,
+        )
+        .toList();
+    final start = previous.length > 6 ? previous.length - 6 : 0;
+    return previous
+        .sublist(start)
+        .map(
+          (item) => AssistantChatTurn(
+            role: item.author == AssistantMessageAuthor.user
+                ? AssistantChatRole.user
+                : AssistantChatRole.assistant,
+            text: item.text,
+          ),
+        )
+        .toList(growable: false);
+  }
+
   void _appendAlarmStatus(String text) {
     _append(
       author: AssistantMessageAuthor.assistant,
@@ -165,6 +199,8 @@ class AssistantConversationController extends ChangeNotifier {
     required AssistantConversationItemKind kind,
     required String text,
     TravelAlarmState? alarmSnapshot,
+    String? routeFrom,
+    String? routeTo,
   }) {
     _items.add(
       AssistantConversationItem(
@@ -173,6 +209,8 @@ class AssistantConversationController extends ChangeNotifier {
         kind: kind,
         text: text,
         alarmSnapshot: alarmSnapshot,
+        routeFrom: routeFrom,
+        routeTo: routeTo,
       ),
     );
   }
